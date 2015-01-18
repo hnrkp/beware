@@ -2,8 +2,10 @@
 {% block title %}Index{% endblock %}
 {% block content%}
 
+<ul>
 {% for index, name in objects %}
-    <li>{{ index }} : {{ name }}</li>
+    <li><a href="reservations?object={{ index }}">{{ name }}</a></li>
 {% endfor %}
+</ul>
 
 {% endblock %}

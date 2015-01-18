@@ -1,0 +1,16 @@
+{% extends "master.html" %}
+{% block title %}Index{% endblock %}
+{% block content%}
+
+<ul>
+{% for r in reservations %}
+    <li>
+    {{ r.getDescriptiveString() }}
+    {% if r.state == 0 %}
+    - <a href="reserve?obj={{ r.obj }}&start={{ r.fromTime }}&stop={{ r.toTime }}"> Book!</a>
+    {% endif %}
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}

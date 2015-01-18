@@ -2,6 +2,7 @@
 from twisted.internet import reactor
 from twisted.web import static, server
 from twisted.web.resource import Resource
+from datetime import datetime, timedelta
 
 from bewatorcgi import BewatorCgi
 
@@ -15,6 +16,11 @@ env = Environment(loader=PackageLoader('beware', 'templates'))
 def simpleError(errorText):
     template = env.get_template("error.html")
     return template.render(error=errorText).encode("utf-8")
+
+def toIndex(request):
+    request.redirect("/")
+    request.finish()
+    return server.NOT_DONE_YET
 
 class Index(Resource):
     def getChild(self, name, request):
@@ -30,7 +36,7 @@ class Index(Resource):
 class Login(Resource):
     def render_POST(self, request):
         if not "user" in request.args or not "password" in request.args:
-            return simpleError("wtf?")
+            return toIndex(request)
         
         user = request.args["user"][0]
         password = request.args["password"][0]
@@ -38,12 +44,14 @@ class Login(Resource):
         if not user.isdigit() or not password.isdigit():
             return simpleError("nasty-error!")
         
-        session = BewatorCgi(URL).login(user, password)
+        session = request.getSession()
+        session.bcgi = BewatorCgi(URL)
+        sessionId = session.bcgi.login(user, password)
         
-        if session < 0:
+        if sessionId < 0:
             return simpleError("Login error")
         
-        request.getSession().bewator_session = session
+        session.bewator_session = sessionId
         
         request.redirect("objectlist")
         request.finish()
@@ -52,18 +60,50 @@ class Login(Resource):
 
 class ListObjects(Resource):
     def render_GET(self, request):
-        session = request.getSession().bewator_session
+        session = request.getSession()
+        if not hasattr(session, "bewator_session"):
+            return toIndex(request)
         
-        objects = BewatorCgi(URL).listObjects(session)
+        objects = session.bcgi.getBookingObjects(session.bewator_session)
         
         template = env.get_template("objectlist.html")
         return template.render(objects=objects).encode("utf-8")
 
-root = Index()
+class ListReservations(Resource):
+    def render_GET(self, request):
+        session = request.getSession()
+        if not hasattr(session, "bewator_session"):
+            return toIndex(request)
 
+        if not "object" in request.args:
+            return simpleError("no object specified")
+
+        obj = request.args["object"][0]
+        
+        if not obj.isdigit():
+            return simpleError("nasty-error!")
+
+        obj = int(obj)
+
+        dt = datetime.now()
+        
+        #dt -= timedelta(days = dt.weekday(), seconds=dt.second, hours=dt.hour, minutes = dt.minute, microseconds = dt.microsecond)
+        
+        myTime = int((dt - datetime(1990, 1, 1, 0, 0)).total_seconds())
+        
+        reservations = session.bcgi.getReservations(session.bewator_session, obj, myTime)
+        
+        for r in reservations:
+            print r.getDescriptiveString()
+        
+        return env.get_template("reservations.html").render(reservations=reservations).encode("utf-8")
+
+
+root = Index()
 root.putChild("style.css", static.File("static/style.css"))
 root.putChild("login", Login())
 root.putChild("objectlist", ListObjects())
+root.putChild("reservations", ListReservations())
 
 reactor.listenTCP(31337, server.Site(root))
 reactor.run()
