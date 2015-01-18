@@ -1,0 +1,9 @@
+  Beware - the Bewator online booking system reversed
+
+Beware is a small twisted project to enable users of the Bewator booking system
+to actually use the web infrastructure of that system without using the
+provided Java Applet<tm>.
+
+It uses twisted for request engine stuff and Jinja2 for templating.
+
+FIXME stuff about arguments, how to setup, etc.

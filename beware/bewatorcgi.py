@@ -18,8 +18,6 @@ class BewatorCgi:
     def login(self, user, password):
         passhash = hashlib.md5(password).hexdigest()
         
-        print "passhash", passhash
-        
         self.conn.request("GET", "/login.cgi?id=%s&data=%s&type=1" % (user, passhash))
         r = self.conn.getresponse()
         
@@ -30,8 +28,7 @@ class BewatorCgi:
         
         status = ord(s[1])
         
-        sessid = 0
-        
+        # FIXME parse and return something useful
         if status != 48 or len(s) < 4:
             return -1
         
@@ -55,10 +52,10 @@ class BewatorCgi:
         of = StringIO(s)
         
         of.read(1)
-        
-        if of.read(1) != '0':
+        r = of.read(1)
+        if r != '0':
             print "nok response for object fetch"
-            exit()
+            raise Exception("Response: " + str(ord(r)))
         
         of.read(1)
         
@@ -72,7 +69,7 @@ class BewatorCgi:
         
             self.__skipDelimiter(of)
         
-            ostr = of.read(l)
+            ostr = of.read(l).decode('iso-8859-1')
             print "Got object:", ostr
             objects.append((i, ostr))
             of.read(1)

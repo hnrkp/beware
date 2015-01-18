@@ -1,0 +1,9 @@
+{% extends "master.html" %}
+{% block title %}Index{% endblock %}
+{% block content%}
+
+{% for index, name in objects %}
+    <li>{{ index }} : {{ name }}</li>
+{% endfor %}
+
+{% endblock %}
