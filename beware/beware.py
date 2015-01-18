@@ -79,7 +79,7 @@ class ListReservations(Resource):
             return simpleError("no object specified")
 
         obj = request.args["object"][0]
-        
+
         if not obj.isdigit():
             return simpleError("nasty-error!")
 
@@ -98,12 +98,37 @@ class ListReservations(Resource):
         
         return env.get_template("reservations.html").render(reservations=reservations).encode("utf-8")
 
+class Reserve(Resource):
+    def render_GET(self, request):
+        session = request.getSession()
+        if not hasattr(session, "bewator_session"):
+            return toIndex(request)
+
+        if not "start" in request.args or not "end" in request.args:
+            return simpleError("parameter error")
+
+        if not "object" in request.args:
+            return simpleError("no object specified")
+
+        obj = request.args["object"][0]
+        
+        start = request.args["start"][0]
+        end = request.args["end"][0]
+        
+        if not start.isdigit() or not end.isdigit() or not obj.isdigit():
+            return simpleError("nasty-error!")
+        
+        res = session.bcgi.reserve(session.bewator_session, obj, start, end)
+        
+        return "Result: " + str(res)
+
 
 root = Index()
 root.putChild("style.css", static.File("static/style.css"))
 root.putChild("login", Login())
 root.putChild("objectlist", ListObjects())
 root.putChild("reservations", ListReservations())
+root.putChild("reserve", Reserve())
 
 reactor.listenTCP(31337, server.Site(root))
 reactor.run()

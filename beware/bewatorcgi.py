@@ -252,3 +252,16 @@ class BewatorCgi:
         print len(resstr), "vs", f.pos
         
         return bookings
+
+    def reserve(self, session, obj, start, end):
+        self.conn.request("GET", "/makeres.cgi?session=%s&object=%s&start=%s&stop=%s" % (session, obj, start, end))
+        r = self.conn.getresponse()
+    
+        resstr = r.read()
+    
+        f = StringIO(resstr)
+        f.read(1)
+    
+        status = f.read(1)
+
+        return ord(status)

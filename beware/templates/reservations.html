@@ -7,7 +7,7 @@
     <li>
     {{ r.getDescriptiveString() }}
     {% if r.state == 0 %}
-    - <a href="reserve?obj={{ r.obj }}&start={{ r.fromTime }}&stop={{ r.toTime }}"> Book!</a>
+    - <a href="reserve?object={{ r.object }}&start={{ r.startTs }}&end={{ r.endTs }}"> Book!</a>
     {% endif %}
     </li>
 {% endfor %}
