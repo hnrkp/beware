@@ -66,7 +66,7 @@ class BewatorCgi:
         return sessid
     
     def getBookingObjects(self, session):
-        self.conn.request("GET", "/names.cgi?session=%s" % session)
+        self.conn.request("GET", "/names.cgi?session=%d" % session)
         r = self.conn.getresponse()
         
         if r.status != 200:
@@ -121,7 +121,7 @@ class BewatorCgi:
         """Get an object holding the reservations starting at time fromTime.
            That time is the Bewator 'seconds' since 1990 timestamp.""" 
         
-        self.conn.request("GET", "/combo.cgi?session=%s&object=%d&start=%d&stop=%d" % (session, obj, fromTime/86400, fromTime/86400+6))
+        self.conn.request("GET", "/combo.cgi?session=%d&object=%d&start=%d&stop=%d" % (session, obj, fromTime/86400, fromTime/86400+6))
         
         r = self.conn.getresponse()
     
@@ -162,7 +162,6 @@ class BewatorCgi:
         self.__skipDelimiter(f)
     
         forward_booking_time = self.__readShortByteParam(f)
-        print "forward booking time FIXME ", forward_booking_time
     
         self.__skipDelimiter(f)
     
@@ -212,9 +211,6 @@ class BewatorCgi:
     
         i = 0
         
-        print otherBookings
-        print myBookings
-        
         dt = (datetime(1990, 1, 1, 0, 0) + timedelta(seconds = fromTime)).replace(hour = 0, minute = 0, second = 0)
         
         while i < tintervals:
@@ -237,8 +233,6 @@ class BewatorCgi:
             
             r = reservation(obj, tsFrom, tsTo, b)
     
-            print b
-    
             bookings.append(r)
     
             i += 1
@@ -248,13 +242,23 @@ class BewatorCgi:
         self.__skipDelimiter(f)
         serviceStop = int(f.read(10))
     
-        print "service:", serviceStart, serviceStop
-        print len(resstr), "vs", f.pos
-        
         return bookings
 
     def reserve(self, session, obj, start, end):
-        self.conn.request("GET", "/makeres.cgi?session=%s&object=%s&start=%s&stop=%s" % (session, obj, start, end))
+        self.conn.request("GET", "/makeres.cgi?session=%d&object=%d&start=%d&stop=%d" % (session, obj, start, end))
+        r = self.conn.getresponse()
+    
+        resstr = r.read()
+    
+        f = StringIO(resstr)
+        f.read(1)
+    
+        status = f.read(1)
+
+        return ord(status)
+    
+    def cancelReservation(self, session, obj, start):
+        self.conn.request("GET", "/cancelres.cgi?session=%d&object=%d&start=%d" % (session, obj, start))
         r = self.conn.getresponse()
     
         resstr = r.read()

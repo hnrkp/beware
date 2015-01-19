@@ -51,9 +51,11 @@ class Login(Resource):
         if sessionId < 0:
             return simpleError("Login error")
         
-        session.bewator_session = sessionId
+        print "Login successful for user " + user + " from " + str(request.getClientIP())
         
-        request.redirect("objectlist")
+        session.bewator_session = int(sessionId)
+        
+        request.redirect("objects")
         request.finish()
         
         return server.NOT_DONE_YET
@@ -66,7 +68,7 @@ class ListObjects(Resource):
         
         objects = session.bcgi.getBookingObjects(session.bewator_session)
         
-        template = env.get_template("objectlist.html")
+        template = env.get_template("objects.html")
         return template.render(objects=objects).encode("utf-8")
 
 class ListReservations(Resource):
@@ -93,9 +95,6 @@ class ListReservations(Resource):
         
         reservations = session.bcgi.getReservations(session.bewator_session, obj, myTime)
         
-        for r in reservations:
-            print r.getDescriptiveString()
-        
         return env.get_template("reservations.html").render(reservations=reservations).encode("utf-8")
 
 class Reserve(Resource):
@@ -118,17 +117,57 @@ class Reserve(Resource):
         if not start.isdigit() or not end.isdigit() or not obj.isdigit():
             return simpleError("nasty-error!")
         
+        obj = int(obj)
+        start = int(start)
+        end = int(end)
+        
         res = session.bcgi.reserve(session.bewator_session, obj, start, end)
         
-        return "Result: " + str(res)
+        if (res == 48):
+            request.redirect("reservations?object=" + str(obj))
+            request.finish()
+            
+            return server.NOT_DONE_YET
+        
+        return simpleError("Error in reserve: %d" % (res, ))
 
+class CancelReservation(Resource):
+    def render_GET(self, request):
+        session = request.getSession()
+        if not hasattr(session, "bewator_session"):
+            return toIndex(request)
+
+        if not "start" in request.args or not "object" in request.args:
+            return simpleError("parameter error")
+
+        obj = request.args["object"][0]
+        
+        start = request.args["start"][0]
+        
+        if not start.isdigit() or not obj.isdigit():
+            return simpleError("nasty-error!")
+        
+        obj = int(obj)
+        start = int(start)
+        
+        res = session.bcgi.cancelReservation(session.bewator_session, obj, start)
+        
+        if (res == 48):
+            request.redirect("reservations?object=" + str(obj))
+            request.finish()
+            
+            return server.NOT_DONE_YET
+        
+        return simpleError("Error in cancel: %d" % (res, ))
 
 root = Index()
 root.putChild("style.css", static.File("static/style.css"))
 root.putChild("login", Login())
-root.putChild("objectlist", ListObjects())
+root.putChild("objects", ListObjects())
 root.putChild("reservations", ListReservations())
 root.putChild("reserve", Reserve())
+root.putChild("cancel", CancelReservation())
+
 
 reactor.listenTCP(31337, server.Site(root))
 reactor.run()

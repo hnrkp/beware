@@ -7,9 +7,12 @@
     <li>
     {{ r.getDescriptiveString() }}
     {% if r.state == 0 %}
-    - <a href="reserve?object={{ r.object }}&start={{ r.startTs }}&end={{ r.endTs }}"> Book!</a>
+    - <a href="reserve?object={{ r.object }}&start={{ r.startTs }}&end={{ r.endTs }}"> Reserve!</a>
     {% endif %}
+    {% if r.state == 2 %}
+    - <a href="cancel?object={{ r.object }}&start={{ r.startTs }}"> cancel reservation!</a>
     </li>
+    {% endif %}
 {% endfor %}
 </ul>
 
