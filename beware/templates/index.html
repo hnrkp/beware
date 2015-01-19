@@ -1,9 +1,15 @@
 {% extends "master.html" %}
 {% block title %}Index{% endblock %}
 {% block content%}
-<form action="login" method="post">
-Username: <input type="text" name="user"/><br/>
-Password: <input type="password" name="password"/><br/>
-<input type="submit" />
-</form>
+    <div class="container">
+
+		<form class="form-signin" action="login" method="post">
+	    	<h2 class="form-signin-heading">Please login</h2>
+	    	<label for="user" class="sr-only">Tag ID / Username</label>
+			<input type="text" class="form-control" name="user" placeholder="Username/Tag" required autofocus/><br/>
+			<label for="password" class="sr-only">Password</label>
+			<input type="password" name="password" class="form-control" placeholder="Password" required/><br/>
+	        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+		</form>
+	</div>
 {% endblock %}
