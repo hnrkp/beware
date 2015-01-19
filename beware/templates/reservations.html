@@ -1,19 +1,47 @@
-{% extends "master.html" %}
-{% block title %}Index{% endblock %}
-{% block content%}
 
-<ul>
+{% set lastDate = None %}
+<div>
 {% for r in reservations %}
-    <li>
-    {{ r.getDescriptiveString() }}
+	{% if lastDate != r.start.date() %}
+	{% set lastDate = r.start.date() %}
+	</div><div class="res-date">
+	<button type="button" class="btn btn-warning btn-sm active">{{ lastDate }}</button>
+	<br/>
+	{% endif %}
     {% if r.state == 0 %}
-    - <a href="reserve?object={{ r.object }}&start={{ r.startTs }}&end={{ r.endTs }}"> Reserve!</a>
+    <a href="reserve?object={{ r.object }}&start={{ r.startTs }}&end={{ r.endTs }}"
+       class="btn btn-default btn-sm" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
+    {% endif %}
+    {% if r.state == 1 %}
+    <button type="button" class="btn btn-danger btn-sm active">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</button>
     {% endif %}
     {% if r.state == 2 %}
-    - <a href="cancel?object={{ r.object }}&start={{ r.startTs }}"> cancel reservation!</a>
-    </li>
+    <a href="cancel?object={{ r.object }}&start={{ r.startTs }}"
+	   class="btn btn-success btn-sm active" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
     {% endif %}
+    <br/>
 {% endfor %}
-</ul>
+</div>
+<button id="next-btn" type="button" class="btn btn-warning btn-sm active">Next -&gt;</button>
 
-{% endblock %}
+{% if prevTs %}
+<br/>
+<button id="prev-btn" type="button" class="btn btn-warning btn-sm active">&lt;- Prev</button>
+{% endif %}
+
+<script type="text/javascript">
+
+  $(function() {
+    $("#next-btn").click(function(e) {
+      $("#reservations-content").load("reservations?object={{ object }}&fromTs={{ nextTs }}");
+    });
+  });
+  
+  $(function() {
+    $("#prev-btn").click(function(e) {
+      $("#reservations-content").load("reservations?object={{ object }}&fromTs={{ prevTs }}");
+    });
+  });
+  
+
+</script>

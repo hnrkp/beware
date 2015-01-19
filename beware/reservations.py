@@ -14,4 +14,6 @@ class reservation(object):
         state = ['Free', 'Reserved', 'Reserved by you']
         
         return str(self.start) + " - " + str(self.end.time()) + ": " + state[self.state]
-    
+
+    def getIntervalString(self):
+        return str(self.start.time()) + "-" + str(self.end.time())

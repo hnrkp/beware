@@ -4,6 +4,13 @@ body {
   background-color: #eee;
 }
 
+.res-date {
+	text-align: center;
+	width: auto;
+	max-width: auto;
+	float: left;
+}
+
 .form-signin {
   max-width: 330px;
   padding: 15px;

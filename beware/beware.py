@@ -85,17 +85,25 @@ class ListReservations(Resource):
         if not obj.isdigit():
             return simpleError("nasty-error!")
 
+        if "fromTs" in request.args and request.args["fromTs"][0].isdigit():
+            myTime = int(request.args["fromTs"][0])
+            prevTs = myTime - 86400 * 7
+        else:
+            dt = datetime.now()
+        
+            #dt -= timedelta(days = dt.weekday(), seconds=dt.second, hours=dt.hour, minutes = dt.minute, microseconds = dt.microsecond)
+        
+            myTime = int((dt - datetime(1990, 1, 1, 0, 0)).total_seconds())
+            prevTs = None
+
         obj = int(obj)
 
-        dt = datetime.now()
-        
-        #dt -= timedelta(days = dt.weekday(), seconds=dt.second, hours=dt.hour, minutes = dt.minute, microseconds = dt.microsecond)
-        
-        myTime = int((dt - datetime(1990, 1, 1, 0, 0)).total_seconds())
-        
         reservations = session.bcgi.getReservations(session.bewator_session, obj, myTime)
         
-        return env.get_template("reservations.html").render(reservations=reservations).encode("utf-8")
+        nextTs = myTime + 86400 * 7
+        
+        return env.get_template("reservations.html").render(object=obj, prevTs=prevTs, nextTs=nextTs,
+                                                            reservations=reservations).encode("utf-8")
 
 class Reserve(Resource):
     def render_GET(self, request):
@@ -124,7 +132,7 @@ class Reserve(Resource):
         res = session.bcgi.reserve(session.bewator_session, obj, start, end)
         
         if (res == 48):
-            request.redirect("reservations?object=" + str(obj))
+            request.redirect("objects")
             request.finish()
             
             return server.NOT_DONE_YET
@@ -153,7 +161,7 @@ class CancelReservation(Resource):
         res = session.bcgi.cancelReservation(session.bewator_session, obj, start)
         
         if (res == 48):
-            request.redirect("reservations?object=" + str(obj))
+            request.redirect("objects")
             request.finish()
             
             return server.NOT_DONE_YET

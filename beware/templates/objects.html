@@ -2,10 +2,30 @@
 {% block title %}Index{% endblock %}
 {% block content%}
 
-<ul>
+<h2>Beware!</h2>
+<hr/>
+  <div class="bs-example bs-example-tabs" role="tabpanel" data-example-id="togglable-tabs">
+    <ul id="myTab" class="nav nav-tabs" role="tablist">
+      {% for index, name in objects %}
+    	<li role="presentation"><a role="tab" id="obj-{{ index }}-tab" data-toggle="tab"  aria-controls="obj-{{ index }}-tab" >{{ name }}</a></li>
+	  {% endfor %}
+	  </ul>
+    <div id="reservations-content" class="tab-content">
+    Reservations go here. Please select your object.
+    </div>
+  </div>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
 {% for index, name in objects %}
-    <li><a href="reservations?object={{ index }}">{{ name }}</a></li>
+    $("#myTab a#obj-{{ index }}-tab").click(function(e){
+    	$("#reservations-content").load("reservations?object={{ index }}");
+        e.preventDefault();
+        $(this).tab('show');
+    });
 {% endfor %}
-</ul>
+});
+</script>
 
 {% endblock %}
