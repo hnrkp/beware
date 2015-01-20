@@ -20,8 +20,6 @@ def simpleError(errorText):
     template = env.get_template("error.html")
     return template.render(error=errorText).encode("utf-8")
 
-from twisted.python.compat import networkString, nativeString
-
 def getRoot(request):
     port = request.getHost().port
     if request.isSecure():
@@ -32,10 +30,7 @@ def getRoot(request):
         hostport = ''
     else:
         hostport = ':%d' % port
-    prefix = networkString('http%s://%s%s/' % (
-        request.isSecure() and 's' or '',
-        nativeString(request.getRequestHostname()),
-        hostport))
+    prefix = 'http%s://%s%s/' % (request.isSecure() and 's' or '', request.getRequestHostname(), hostport)
     path = b'/'.join([quote(segment, safe=b'') for segment in request.prepath[:-1]])
     return prefix + path
 
