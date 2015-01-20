@@ -3,11 +3,14 @@ from twisted.internet import reactor
 from twisted.web import static, server
 from twisted.web.resource import Resource
 from datetime import datetime, timedelta
+from twisted.web.util import redirectTo
 
 from bewatorcgi import BewatorCgi
 
 # Templating
 from jinja2 import Environment, PackageLoader
+
+from urllib import quote
 
 URL = "81.224.81.68"
 
@@ -17,10 +20,29 @@ def simpleError(errorText):
     template = env.get_template("error.html")
     return template.render(error=errorText).encode("utf-8")
 
+from twisted.python.compat import networkString, nativeString
+
+def getRoot(request):
+    port = request.getHost().port
+    if request.isSecure():
+        default = 443
+    else:
+        default = 80
+    if port == default:
+        hostport = ''
+    else:
+        hostport = ':%d' % port
+    prefix = networkString('http%s://%s%s/' % (
+        request.isSecure() and 's' or '',
+        nativeString(request.getRequestHostname()),
+        hostport))
+    path = b'/'.join([quote(segment, safe=b'') for segment in request.prepath[:-1]])
+    return prefix + path
+
+    
 def toIndex(request):
-    request.redirect("/")
-    request.finish()
-    return server.NOT_DONE_YET
+    url = getRoot(request)
+    return redirectTo(url, request)
 
 class Index(Resource):
     def getChild(self, name, request):
@@ -55,10 +77,8 @@ class Login(Resource):
         
         session.bewator_session = int(sessionId)
         
-        request.redirect("objects")
-        request.finish()
-        
-        return server.NOT_DONE_YET
+        url = getRoot(request)
+        return redirectTo(url + "objects", request)
 
 class ListObjects(Resource):
     def render_GET(self, request):
