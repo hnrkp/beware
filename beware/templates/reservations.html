@@ -9,39 +9,37 @@
 	<br/>
 	{% endif %}
     {% if r.state == 0 %}
-    <a href="reserve?object={{ r.object }}&start={{ r.startTs }}&end={{ r.endTs }}"
+    <a onclick="javascript:makeReservation({{ r.object }}, {{ r.startTs }}, {{ r.endTs }});"
        class="btn btn-default btn-sm" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
     {% endif %}
     {% if r.state == 1 %}
     <button type="button" class="btn btn-danger btn-sm active">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</button>
     {% endif %}
     {% if r.state == 2 %}
-    <a href="cancel?object={{ r.object }}&start={{ r.startTs }}"
+    <a onclick="javascript:cancelReservation({{ r.object }}, {{ r.startTs }});"
 	   class="btn btn-success btn-sm active" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
     {% endif %}
     <br/>
 {% endfor %}
 </div>
 <button id="next-btn" type="button" class="btn btn-warning btn-sm active">Next -&gt;</button>
-
-{% if prevTs %}
 <br/>
 <button id="prev-btn" type="button" class="btn btn-warning btn-sm active">&lt;- Prev</button>
-{% endif %}
 
 <script type="text/javascript">
+curTs = {{ curTs }};
 
-  $(function() {
-    $("#next-btn").click(function(e) {
-      $("#reservations-content").load("reservations?object={{ object }}&fromTs={{ nextTs }}");
-    });
+$(function() {
+  $("#next-btn").click(function(e) {
+  	loadReservations({{ object }}, {{ nextTs }});
   });
-  
-  $(function() {
-    $("#prev-btn").click(function(e) {
-      $("#reservations-content").load("reservations?object={{ object }}&fromTs={{ prevTs }}");
-    });
+});
+
+$(function() {
+  $("#prev-btn").click(function(e) {
+    loadReservations({{ object }}, {{ prevTs }});
   });
+});
   
 
 </script>

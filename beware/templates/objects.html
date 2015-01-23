@@ -2,6 +2,9 @@
 {% block title %}Index{% endblock %}
 {% block content%}
 
+<!-- Our own functions -->
+<script src="beware.js"></script>
+
 <h2>Beware!</h2>
 <hr/>
   <div class="bs-example bs-example-tabs" role="tabpanel" data-example-id="togglable-tabs">
@@ -16,11 +19,10 @@
   </div>
 
 <script type="text/javascript">
-
 $(document).ready(function(){
 {% for index, name in objects %}
     $("#myTab a#obj-{{ index }}-tab").click(function(e){
-    	$("#reservations-content").load("reservations?object={{ index }}");
+    	loadReservations({{ index }}, -1);
         e.preventDefault();
         $(this).tab('show');
     });

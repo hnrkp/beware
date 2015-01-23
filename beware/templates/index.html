@@ -5,6 +5,10 @@
 
 		<form class="form-signin" action="login" method="post">
 	    	<h2 class="form-signin-heading">Please login</h2>
+			{% if error %}
+			<div class="alert alert-danger" role="alert">{{ error }}</div>
+			{% endif %}
+
 	    	<label for="user" class="sr-only">Tag ID / Username</label>
 			<input type="text" class="form-control" name="user" placeholder="Username/Tag" required autofocus/><br/>
 			<label for="password" class="sr-only">Password</label>
