@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 from twisted.internet import reactor
 from twisted.web import static, server
 from twisted.web.resource import Resource
@@ -12,7 +14,7 @@ from jinja2 import Environment, PackageLoader
 
 from urllib import quote
 
-URL = "81.224.81.68"
+URL = "localhost"
 
 env = Environment(loader=PackageLoader('beware', 'templates'))
 
@@ -68,7 +70,7 @@ class Login(Resource):
         if sessionId < 0:
             return simpleError("Login error")
         
-        print "Login successful for user " + user + " from " + str(request.getClientIP())
+        print("Login successful for user " + user + " from " + str(request.getClientIP()))
         
         session.bewator_session = int(sessionId)
         
@@ -183,14 +185,22 @@ class CancelReservation(Resource):
         
         return simpleError("Error in cancel: %d" % (res, ))
 
-root = Index()
-root.putChild("style.css", static.File("static/style.css"))
-root.putChild("login", Login())
-root.putChild("objects", ListObjects())
-root.putChild("reservations", ListReservations())
-root.putChild("reserve", Reserve())
-root.putChild("cancel", CancelReservation())
-
-
-reactor.listenTCP(31337, server.Site(root))
-reactor.run()
+if __name__ == "__main__":
+    root = Index()
+    root.putChild("style.css", static.File("static/style.css"))
+    root.putChild("login", Login())
+    root.putChild("objects", ListObjects())
+    root.putChild("reservations", ListReservations())
+    root.putChild("reserve", Reserve())
+    root.putChild("cancel", CancelReservation())
+    
+    import sys
+    
+    if len(sys.argv) != 2:
+        print("error: Please give target host as first and only argument to ", sys.argv[0], file=sys.stderr, sep="")
+        sys.exit(1)
+    
+    URL = sys.argv[1]
+    
+    reactor.listenTCP(31337, server.Site(root))
+    reactor.run()
