@@ -7,9 +7,10 @@ provided Java Applet<tm>.
 It uses twisted for request engine stuff and Jinja2 for templating.
 
 For now, just run it like this:
- $ python bewator.py
+ $ python bewator.py <BEWATOR-HOSTNAME>
 
 and it will present a login page at http://localhost:31337/.
 
-You want to change the URL parameter in beware.py before starting it though,
-unless you live where I live. I'll fix this soon.
+<BEWATOR-HOSTNAME> is of course the server which serves the applet/CGI stuff.
+
+@Author Henrik Persson <root@fulhack.info>
