@@ -5,9 +5,11 @@ function checkError(response, status, xhr) {
     } else if (xhr.status == 401) {
       // login again
       window.location.href = "/?error=Session%20expired,%20please%20login%20again.";
-    } else {
+    } else if (xhr.status == 0) {
+    	alert("Unknown network error occured.");
+    }  else {
     	// FIXME popup?
-    	alert(response);
+    	alert(xhr.status + ": " + response);
     }
   }
 }
