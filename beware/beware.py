@@ -46,8 +46,12 @@ def relogin(request):
     return "Please login again"
     
 def toIndex(request):
-    url = getRoot(request)
-    return redirectTo(url, request)
+    return toUrl(request, "")
+
+def toUrl(url, request):
+    getRoot(request)
+    return redirectTo(getRoot(request) + url, request)
+    
 
 class Index(Resource):
     def getChild(self, name, request):
@@ -79,14 +83,13 @@ class Login(Resource):
         
         if sessionId < 0:
             print("Login failed for user " + user + " from " + str(request.getClientIP()))
-            return redirectTo("/?error=Login%20failed", request)
+            return toUrl("?error=Login%20failed", request)
         
         print("Login successful for user " + user + " from " + str(request.getClientIP()))
         
         session.bewator_session = int(sessionId)
         
-        url = getRoot(request)
-        return redirectTo(url + "objects", request)
+        return toUrl("objects", request)
 
 class ListObjects(Resource):
     def render_GET(self, request):
