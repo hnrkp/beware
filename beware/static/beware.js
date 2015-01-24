@@ -4,7 +4,7 @@ function checkError(response, status, xhr) {
       $("#reservations-content").html(status + response);
     } else if (xhr.status == 401) {
       // login again
-      window.location.href = "/?error=Session%20expired,%20please%20login%20again.";
+      window.location.href = "index?error=Session%20expired,%20please%20login%20again.";
     } else if (xhr.status == 0) {
     	alert("Unknown network error occured.");
     }  else {

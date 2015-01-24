@@ -231,6 +231,7 @@ class CancelReservation(Resource):
 
 if __name__ == "__main__":
     root = Index()
+    root.putChild("index", Index())
     root.putChild("style.css", static.File("static/style.css"))
     root.putChild("beware.js", static.File("static/beware.js"))
     root.putChild("login", Login())
