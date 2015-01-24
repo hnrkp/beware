@@ -1,4 +1,4 @@
-  Beware - the Bewator online booking system reversed
+  Beware - the Bewator online booking system Java Applet replacement
 
 Beware is a small twisted project to enable users of the Bewator booking system
 to actually use the web infrastructure of that system without using the
@@ -7,10 +7,16 @@ provided Java Applet<tm>.
 It uses twisted for request engine stuff and Jinja2 for templating.
 
 For now, just run it like this:
- $ python bewator.py <BEWATOR-HOSTNAME>
+ $ python bewator.py <BEWATOR-APPLET-HTTP-HOSTNAME>
 
 and it will present a login page at http://localhost:31337/.
 
-<BEWATOR-HOSTNAME> is of course the server which serves the applet/CGI stuff.
+<BEWATOR-BEWATOR-APPLET-HTTP-HOSTNAME> is of course the server which serves
+the applet/CGI stuff.
+
+This project does NOT use the Bewator BAPSI interface, since I don't have
+access to any system using that. I'm aware that it would probably be a better
+fit, but this project is aimed at replacing the annoying applet which doesn't
+really work in this time and age.
 
 @Author Henrik Persson <root@fulhack.info>
