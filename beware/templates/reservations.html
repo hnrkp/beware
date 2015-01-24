@@ -1,4 +1,3 @@
-
 {% set lastDate = None %}
 <div>
 {% for r in reservations %}
@@ -18,6 +17,9 @@
     {% if r.state == 2 %}
     <a onclick="javascript:cancelReservation({{ r.object }}, {{ r.startTs }});"
 	   class="btn btn-success btn-sm active" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
+    {% endif %}
+    {% if r.state == 3 %}
+    <button type="button" class="btn btn-default btn-sm disabled" style="background-color: darkgrey;">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</button>
     {% endif %}
     <br/>
 {% endfor %}
@@ -40,6 +42,4 @@ $(function() {
     loadReservations({{ object }}, {{ prevTs }});
   });
 });
-  
-
 </script>

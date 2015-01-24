@@ -244,7 +244,7 @@ class BewatorCgi:
     
         return bookings
 
-    def reserve(self, session, obj, start, end):
+    def makeReservation(self, session, obj, start, end):
         self.conn.request("GET", "/makeres.cgi?session=%d&object=%d&start=%d&stop=%d" % (session, obj, start, end))
         r = self.conn.getresponse()
     

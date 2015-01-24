@@ -112,6 +112,8 @@ class ListReservations(Resource):
 
         if not obj.isdigit():
             return badRequest(request, "nasty-error!")
+        
+        obj = int(obj)
 
         dt = datetime.now()
         
@@ -122,21 +124,23 @@ class ListReservations(Resource):
 
         if "fromTs" in request.args and request.args["fromTs"][0].isdigit():
             myTime = int(request.args["fromTs"][0])
-            prevTs = myTime - 86400 * 7
         else:
             myTime = nowTime
-            prevTs = None
-
-        obj = int(obj)
-
+            
         reservations = session.bcgi.getReservations(session.bewator_session, obj, myTime)
         
+        # Mark reservations in the past as "3".
+        for r in reservations:
+            if r.endTs < nowTime:
+                r.state = 3
+        
         nextTs = myTime + 86400 * 7
+        prevTs = myTime - 86400 * 7
         
         return env.get_template("reservations.html").render(object=obj, curTs=myTime, prevTs=prevTs, nextTs=nextTs,
                                                             reservations=reservations).encode("utf-8")
 
-class Reserve(Resource):
+class MakeReservation(Resource):
     def render_GET(self, request):
         session = request.getSession()
         if not hasattr(session, "bewator_session"):
@@ -160,15 +164,12 @@ class Reserve(Resource):
         start = int(start)
         end = int(end)
         
-        res = session.bcgi.reserve(session.bewator_session, obj, start, end)
+        res = session.bcgi.makeReservation(session.bewator_session, obj, start, end)
         
         if (res == 48):
-            request.redirect("objects")
-            request.finish()
-            
-            return server.NOT_DONE_YET
+            return "All ok!"
         
-        return bewatorRequestError(request, "Error in reserve: %d" % (res, ))
+        return bewatorRequestError(request, "Error in reserve: %d" % (res - 49, ))
 
 class CancelReservation(Resource):
     def render_GET(self, request):
@@ -192,12 +193,9 @@ class CancelReservation(Resource):
         res = session.bcgi.cancelReservation(session.bewator_session, obj, start)
         
         if (res == 48):
-            request.redirect("objects")
-            request.finish()
-            
-            return server.NOT_DONE_YET
+            return "All ok!"
         
-        return bewatorRequestError(request, "Error in cancel: %d" % (res, ))
+        return bewatorRequestError(request, "Error in cancel: %d" % (res - 49, ))
 
 if __name__ == "__main__":
     root = Index()
@@ -206,7 +204,7 @@ if __name__ == "__main__":
     root.putChild("login", Login())
     root.putChild("objects", ListObjects())
     root.putChild("reservations", ListReservations())
-    root.putChild("reserve", Reserve())
+    root.putChild("reserve", MakeReservation())
     root.putChild("cancel", CancelReservation())
     
     import sys

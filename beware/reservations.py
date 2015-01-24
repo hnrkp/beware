@@ -11,7 +11,7 @@ class reservation(object):
 
     
     def getDescriptiveString(self):
-        state = ['Free', 'Reserved', 'Reserved by you']
+        state = ['Free', 'Reserved', 'Reserved by you', 'In the past']
         
         return str(self.start) + " - " + str(self.end.time()) + ": " + state[self.state]
 
