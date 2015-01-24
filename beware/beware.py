@@ -45,13 +45,9 @@ def relogin(request):
     request.setResponseCode(401)
     return "Please login again"
     
-def toIndex(request):
-    return toUrl(request, "")
-
 def toUrl(url, request):
     getRoot(request)
     return redirectTo(getRoot(request) + url, request)
-    
 
 class Index(Resource):
     def getChild(self, name, request):
@@ -95,7 +91,7 @@ class ListObjects(Resource):
     def render_GET(self, request):
         session = request.getSession()
         if not hasattr(session, "bewator_session"):
-            return toIndex(request)
+            return relogin(request)
         
         objects = session.bcgi.getBookingObjects(session.bewator_session)
         
