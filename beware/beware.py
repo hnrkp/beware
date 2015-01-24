@@ -7,6 +7,8 @@ from twisted.web.resource import Resource
 from datetime import datetime, timedelta
 from twisted.web.util import redirectTo
 
+import traceback
+
 from bewatorcgi import BewatorCgi
 
 # Templating
@@ -26,6 +28,15 @@ def badRequest(request, errorText):
 def bewatorRequestError(request, errorText):
     request.setResponseCode(418) # I'm a teapot!
     return "Error from bewator: " + str(errorText)
+
+def handleBewatorResponse(request, res):
+        if (res == 48):
+            return "All ok!"
+
+        if (res == 49):
+            return relogin(request)
+        
+        return bewatorRequestError(request, "Error in reserve: %d" % (res, ))
 
 def getRoot(request):
     port = request.getHost().port
@@ -97,7 +108,15 @@ class ListObjects(Resource):
         if not hasattr(session, "bewator_session"):
             return sessionExpired(request)
         
-        objects = session.bcgi.getBookingObjects(session.bewator_session)
+        try:
+            objects = session.bcgi.getBookingObjects(session.bewator_session)
+        except Exception:
+            # Assume logged out if exception is thrown, log the exception and relogin user.
+            print('-'*60)
+            traceback.print_exc(file=sys.stdout)
+            print('-'*60)
+
+            return relogin(request)
         
         template = env.get_template("objects.html")
         return template.render(objects=objects).encode("utf-8")
@@ -129,8 +148,23 @@ class ListReservations(Resource):
             myTime = int(request.args["fromTs"][0])
         else:
             myTime = nowTime
+        
+        try:
+            (res, reservations) = session.bcgi.getReservations(session.bewator_session, obj, myTime)
+        except Exception:
+            # Assume logged out if exception is thrown, log the exception and relogin user.
+            print('-'*60)
+            traceback.print_exc(file=sys.stdout)
+            print('-'*60)
             
-        reservations = session.bcgi.getReservations(session.bewator_session, obj, myTime)
+            return relogin(request)
+        
+        if res == 49:
+            return relogin(request)
+        
+        if res != 48:
+            print("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
+            return relogin(request)
         
         # Mark reservations in the past as "3".
         for r in reservations:
@@ -168,11 +202,8 @@ class MakeReservation(Resource):
         end = int(end)
         
         res = session.bcgi.makeReservation(session.bewator_session, obj, start, end)
-        
-        if (res == 48):
-            return "All ok!"
-        
-        return bewatorRequestError(request, "Error in reserve: %d" % (res - 49, ))
+
+        return handleBewatorResponse(request, res)
 
 class CancelReservation(Resource):
     def render_GET(self, request):
@@ -195,10 +226,8 @@ class CancelReservation(Resource):
         
         res = session.bcgi.cancelReservation(session.bewator_session, obj, start)
         
-        if (res == 48):
-            return "All ok!"
-        
-        return bewatorRequestError(request, "Error in cancel: %d" % (res - 49, ))
+        return handleBewatorResponse(request, res)
+
 
 if __name__ == "__main__":
     root = Index()

@@ -130,10 +130,10 @@ class BewatorCgi:
         f = StringIO(resstr)
         f.read(1)
     
-        status = f.read(1)
+        status = ord(f.read(1))
 
-        if status != '0':
-            raise Exception("interval stat != 0: " + ord(status))
+        if status != 48:
+            return (status, None)
     
         self.__skipDelimiter(f)
     
@@ -242,7 +242,7 @@ class BewatorCgi:
         self.__skipDelimiter(f)
         serviceStop = int(f.read(10))
     
-        return bookings
+        return (status, bookings)
 
     def makeReservation(self, session, obj, start, end):
         self.conn.request("GET", "/makeres.cgi?session=%d&object=%d&start=%d&stop=%d" % (session, obj, start, end))
