@@ -199,7 +199,8 @@ class BewatorCgi:
         if tintervals % 8 > 0:
             k += 1
     
-        assert f.read(1) == '0'
+        if f.read(1) != '0':
+            raise Exception("parse error, required field 0, got something else..")
     
         self.__skipDelimiter(f)
         otherBookings = self.__readByteParamArray(f, k)

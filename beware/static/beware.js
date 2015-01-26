@@ -6,8 +6,11 @@ function checkError(response, status, xhr) {
       // login again
       window.location.href = "index?error=Session%20expired,%20please%20login%20again.";
     } else if (xhr.status == 0) {
-    	alert("Unknown network error occured.");
-    }  else {
+      alert("Unknown network error occured.");
+    } else if (xhr.status == 418) {
+      $("#error-popup-message").html(response);
+      $("#error-popup").show();
+    } else {
     	// FIXME popup?
     	alert(xhr.status + ": " + response);
     }

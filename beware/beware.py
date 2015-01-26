@@ -27,16 +27,7 @@ def badRequest(request, errorText):
 
 def bewatorRequestError(request, errorText):
     request.setResponseCode(418) # I'm a teapot!
-    return "Error from bewator: " + str(errorText)
-
-def handleBewatorResponse(request, res):
-        if (res == 48):
-            return "All ok!"
-
-        if (res == 49):
-            return relogin(request)
-        
-        return bewatorRequestError(request, "Error in reserve: %d" % (res, ))
+    return str(errorText)
 
 def getRoot(request):
     port = request.getHost().port
@@ -203,7 +194,28 @@ class MakeReservation(Resource):
         
         res = session.bcgi.makeReservation(session.bewator_session, obj, start, end)
 
-        return handleBewatorResponse(request, res)
+        if (res == 48):
+            return "All ok!"
+
+        if (res == 49):
+            return relogin(request)
+        
+        if (res == 50):
+            return bewatorRequestError(request, "Someone has reserved this time already. Sorry.")
+        
+        if (res == 51):
+            return bewatorRequestError(request, "Max number of reservations reached for your group.")
+        
+        if (res == 52):
+            return bewatorRequestError(request, "Time interval no longer available.")
+        
+        if (res == 53):
+            return bewatorRequestError(request, "Max number of reservations reached for this period.")
+        
+        if (res == 54):
+            return bewatorRequestError(request, "Booking object is in service state, please try again later.")
+        
+        return bewatorRequestError(request, "Unknown error: %d" % (res, ))
 
 class CancelReservation(Resource):
     def render_GET(self, request):
@@ -226,7 +238,12 @@ class CancelReservation(Resource):
         
         res = session.bcgi.cancelReservation(session.bewator_session, obj, start)
         
-        return handleBewatorResponse(request, res)
+        if (res == 48):
+            return "All ok!"
+        
+        # Else something else (probably tried to cancel someone else's reservation.
+        # Not likely to happen, but..
+        return bewatorRequestError(request, "You can only cancel your own reservations.")
 
 
 if __name__ == "__main__":

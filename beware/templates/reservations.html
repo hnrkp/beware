@@ -1,4 +1,10 @@
 {% set lastDate = None %}
+
+<div id="error-popup" class="alert alert-danger alert-dismissible" style="max-width: 570px; margin: 20px; display: none;" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <div id="error-popup-message"></div>
+</div>
+
 <div>
 {% for r in reservations %}
 	{% if lastDate != r.start.date() %}
