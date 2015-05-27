@@ -20,10 +20,13 @@ URL = "localhost"
 
 env = Environment(loader=PackageLoader('beware', 'templates'))
 
+
+siteRenderArgs = {}
+
 def badRequest(request, errorText):
     template = env.get_template("error.html")
     request.setResponseCode(400)
-    return template.render(error=errorText).encode("utf-8")
+    return template.render(siteRenderArgs, error=errorText).encode("utf-8")
 
 def bewatorRequestError(request, errorText):
     request.setResponseCode(418) # I'm a teapot!
@@ -69,7 +72,7 @@ class Index(Resource):
         if "error" in request.args:
             error = html.escape(request.args["error"][0])
         
-        return template.render(error=error).encode("utf-8")
+        return template.render(siteRenderArgs, error=error).encode("utf-8")
 
 class Login(Resource):
     def render_POST(self, request):
@@ -110,7 +113,7 @@ class ListObjects(Resource):
             return relogin(request)
         
         template = env.get_template("objects.html")
-        return template.render(objects=objects).encode("utf-8")
+        return template.render(siteRenderArgs, objects=objects).encode("utf-8")
 
 class ListReservations(Resource):
     def render_GET(self, request):
@@ -165,7 +168,7 @@ class ListReservations(Resource):
         nextTs = myTime + 86400 * 7
         prevTs = myTime - 86400 * 7
         
-        return env.get_template("reservations.html").render(object=obj, curTs=myTime, prevTs=prevTs, nextTs=nextTs,
+        return env.get_template("reservations.html").render(siteRenderArgs, object=obj, curTs=myTime, prevTs=prevTs, nextTs=nextTs,
                                                             reservations=reservations).encode("utf-8")
 
 class MakeReservation(Resource):
@@ -259,11 +262,16 @@ if __name__ == "__main__":
     
     import sys
     
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("error: Please give target host as first and only argument to ", sys.argv[0], file=sys.stderr, sep="")
         sys.exit(1)
     
     URL = sys.argv[1]
+    
+    if (len(sys.argv)) == 3:
+        siteRenderArgs['siteTitle'] = sys.argv[2].decode("utf-8")
+    else:
+        siteRenderArgs['siteTitle'] = u"Beware Bewator"
     
     reactor.listenTCP(31337, server.Site(root))
     reactor.run()

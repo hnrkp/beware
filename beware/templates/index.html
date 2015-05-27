@@ -4,7 +4,9 @@
     <div class="container">
 
 		<form class="form-signin" action="login" method="post">
-	    	<h2 class="form-signin-heading">Please login</h2>
+			<h1>{{siteTitle}}</h1>
+			<hr/>
+			<h3 class="form-signin-heading">Please login</h3>
 			{% if error %}
 			<div class="alert alert-danger" role="alert">{{ error }}</div>
 			{% endif %}
