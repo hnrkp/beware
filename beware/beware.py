@@ -15,13 +15,15 @@ from bewatorcgi import BewatorCgi
 from jinja2 import Environment, PackageLoader
 
 from urllib import quote
+from calendar import calendar
 
 URL = "localhost"
 
 env = Environment(loader=PackageLoader('beware', 'templates'))
 
+weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-siteRenderArgs = {}
+siteRenderArgs = {'weekdays' : weekdays}
 
 def badRequest(request, errorText):
     template = env.get_template("error.html")

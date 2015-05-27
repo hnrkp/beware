@@ -9,8 +9,9 @@
 {% for r in reservations %}
 	{% if lastDate != r.start.date() %}
 	{% set lastDate = r.start.date() %}
+	{% set dayOfWeek = weekdays[r.start.date().weekday()] %}
 	</div><div class="res-date">
-	<button type="button" class="btn btn-warning btn-sm active">{{ lastDate }}</button>
+	<button type="button" class="btn btn-warning btn-sm active">{{ dayOfWeek }}<br/>{{ lastDate }}</button>
 	<br/>
 	{% endif %}
     {% if r.state == 0 %}
