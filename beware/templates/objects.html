@@ -18,7 +18,17 @@
     </div>
   </div>
 
+<div id="loading-indicator" class="loader"></div>
+
 <script type="text/javascript">
+$(document).ajaxSend(function(event, request, settings) {
+    $('#loading-indicator').show();
+});
+
+$(document).ajaxComplete(function(event, request, settings) {
+    $('#loading-indicator').hide();
+});
+
 $(document).ready(function(){
 {% for index, name in objects %}
     $("#myTab a#obj-{{ index }}-tab").click(function(e){
