@@ -136,14 +136,15 @@ class ListReservations(Resource):
         dt = datetime.now()
         
         # for mondays..
-        #dt -= timedelta(days = dt.weekday(), seconds=dt.second, hours=dt.hour, minutes = dt.minute, microseconds = dt.microsecond)
+        dt -= timedelta(days = dt.weekday(), seconds=dt.second, hours=dt.hour, minutes = dt.minute, microseconds = dt.microsecond)
         
-        nowTime = int((dt - datetime(1990, 1, 1, 0, 0)).total_seconds())
+        startTime = int((dt - datetime(1990, 1, 1, 0, 0)).total_seconds())
+        nowTime = int((datetime.now() - datetime(1990, 1, 1, 0, 0)).total_seconds())
 
         if "fromTs" in request.args and request.args["fromTs"][0].isdigit():
             myTime = int(request.args["fromTs"][0])
         else:
-            myTime = nowTime
+            myTime = startTime
         
         try:
             (res, reservations) = session.bcgi.getReservations(session.bewator_session, obj, myTime)
