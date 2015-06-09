@@ -281,18 +281,47 @@ if __name__ == "__main__":
     root.putChild("reserve", MakeReservation())
     root.putChild("cancel", CancelReservation())
     
-    import sys
+    import sys, getopt
     
-    if len(sys.argv) < 2:
-        print("error: Please give target host as first and only argument to ", sys.argv[0], file=sys.stderr, sep="")
-        sys.exit(1)
+    def usage():
+        print("usage: ", sys.argv[0], " -H <bewator-applet-url> [-t <title>] [-p <port>]", file=sys.stderr, sep="")
     
-    URL = sys.argv[1]
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hH:t:p:", ["help"])
+    except getopt.GetoptError as err:
+        # print help information and exit:
+        usage()
+        print(str(err), file=sys.stderr, sep="") # will print something like "option -a not recognized"
+        sys.exit(2)
     
-    if (len(sys.argv)) == 3:
-        siteRenderArgs['siteTitle'] = sys.argv[2].decode("utf-8")
-    else:
-        siteRenderArgs['siteTitle'] = u"Beware Bewator"
+    host = None
+    port = 31337
+    siteTitle = u"Beware Bewator"
     
-    reactor.listenTCP(31337, server.Site(root))
+    for o, a in opts:
+        if o == "-v":
+            verbose = True
+        elif o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        elif o == "-H":
+            host = a
+        elif o == "-t":
+            siteTitle = a.decode("utf-8")
+        elif o == '-p':
+            port = int(a)
+        else:
+            assert False, "unhandled option"
+
+    if host is None:
+        usage()
+        sys.exit(2)
+        
+    URL = host
+    
+    siteRenderArgs['siteTitle'] = siteTitle
+    
+    print("Starting Beware!\n\nURL = \"" + URL + "\"\nPort = " + str(port) + "\nTitle = \"" + siteTitle + "\"\n")
+    
+    reactor.listenTCP(port, server.Site(root))
     reactor.run()
