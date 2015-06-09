@@ -7,7 +7,10 @@ provided Java Applet<tm>.
 It uses twisted for request engine stuff and Jinja2 for templating.
 
 For now, just run it like this:
- $ python bewator.py <BEWATOR-APPLET-HTTP-HOSTNAME>
+ $ python bewator.py -H <BEWATOR-APPLET-HTTP-HOSTNAME>
+
+You can also provide an alternative site title with -t "site name", and also
+change listen port from default 31337 to something else with -p.
 
 and it will present a login page at http://localhost:31337/.
 
