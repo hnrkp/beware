@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from twisted.internet import reactor, defer, threads
+from twisted.internet import reactor, threads
 from twisted.web import static, server, html
 from twisted.web.resource import Resource
 from datetime import datetime, timedelta
-from twisted.web.util import redirectTo
-
-import traceback
 
 from bewatorcgi import BewatorCgi
 
 # Templating
 from jinja2 import Environment, PackageLoader
-
-from urllib import quote
-from calendar import calendar
 
 URL = "localhost"
 
@@ -34,29 +28,15 @@ def bewatorRequestError(request, errorText):
     request.setResponseCode(418) # I'm a teapot!
     return str(errorText)
 
-def getRoot(request):
-    port = request.getHost().port
-    if request.isSecure():
-        default = 443
-    else:
-        default = 80
-    if port == default:
-        hostport = ''
-    else:
-        hostport = ':%d' % port
-    prefix = 'http%s://%s%s/' % (request.isSecure() and 's' or '', request.getRequestHostname(), hostport)
-    path = b'/'.join([quote(segment, safe=b'') for segment in request.prepath[:-1]])
-    return prefix + path
-
 def relogin(request):
     request.setResponseCode(401)
     return "Please login again"
     
 def sessionExpired(request):
-    return toUrl("?error=Session%20expired,%20please%20login%20again.", request)
+    return toUrl("index?error=Session%20expired,%20please%20login%20again.", request)
 
 def toUrl(url, request):
-    return redirectTo(getRoot(request) + url, request)
+    return "<script type=\"text/javascript\">window.location.replace(\"" + url + "\");</script>"
     
 def defaultErrback(failure, request):
     failure.printTraceback()
@@ -88,13 +68,16 @@ class Login(Resource):
         
         if sessionId < 0:
             print("Login failed for user " + user + " from " + str(request.getClientIP()))
-            return toUrl("?error=Login%20failed", request)
+            request.setResponseCode(401)
+            request.write("Login failed")
+            request.finish()
+            return None
         
         print("Login successful for user " + user + " from " + str(request.getClientIP()))
         
         request.getSession().bewator_session = int(sessionId)
         
-        toUrl("objects", request)
+        request.write(toUrl("objects", request))
         request.finish()
 
     def render_POST(self, request):

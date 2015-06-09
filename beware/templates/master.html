@@ -16,10 +16,23 @@
 	
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+	
+	<!-- Our own functions -->
+	<script src="beware.js"></script>
 </head>
 <body>
+<div id="loading-indicator" class="loader"></div>
+
 <script type="text/javascript">
 $.ajaxSetup({ cache: false });
+
+$(document).ajaxSend(function(event, request, settings) {
+    $('#loading-indicator').show();
+});
+
+$(document).ajaxComplete(function(event, request, settings) {
+    $('#loading-indicator').hide();
+});
 </script>
 
 {% block content %}

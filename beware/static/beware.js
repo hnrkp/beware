@@ -4,7 +4,7 @@ function checkError(response, status, xhr) {
       $("#reservations-content").html(status + response);
     } else if (xhr.status == 401) {
       // login again
-      window.location.href = "index?error=Session%20expired,%20please%20login%20again.";
+      window.location.replace("index?error=Session%20expired,%20please%20login%20again.");
     } else if (xhr.status == 0) {
       alert("Unknown network error occured.");
     } else if (xhr.status == 418) {
@@ -15,6 +15,31 @@ function checkError(response, status, xhr) {
     	alert(xhr.status + ": " + response);
     }
   }
+}
+
+function bewareLogin(form) {
+	var user = form.user.value;
+	var password = form.password.value;
+	
+	jQuery.ajax({
+		type: "POST",
+		url: "login",
+		data: { user: user, password: password },
+		success: function (response) {
+			window.location.replace("objects");
+		},
+		error: function (xhr, status, errorThrown) {
+			if (xhr.status == 401) {
+				$('#loading-indicator').hide();
+				$("#error-popup-message").html(xhr.responseText);
+				$("#error-popup").show();
+			} else {
+		    	alert(xhr.status + ": " + xhr.responseText);
+			}
+		},
+	});
+	
+	return false;
 }
 
 function loadReservations(object, timestamp) {

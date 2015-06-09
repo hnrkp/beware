@@ -2,9 +2,6 @@
 {% block title %}Index{% endblock %}
 {% block content%}
 
-<!-- Our own functions -->
-<script src="beware.js"></script>
-
 <h2>{{siteTitle}}</h2>
 <hr/>
   <div class="bs-example bs-example-tabs" role="tabpanel" data-example-id="togglable-tabs">
@@ -18,17 +15,7 @@
     </div>
   </div>
 
-<div id="loading-indicator" class="loader"></div>
-
 <script type="text/javascript">
-$(document).ajaxSend(function(event, request, settings) {
-    $('#loading-indicator').show();
-});
-
-$(document).ajaxComplete(function(event, request, settings) {
-    $('#loading-indicator').hide();
-});
-
 $(document).ready(function(){
 {% for index, name in objects %}
     $("#myTab a#obj-{{ index }}-tab").click(function(e){

@@ -3,13 +3,18 @@
 {% block content%}
     <div class="container">
 
-		<form class="form-signin" action="login" method="post">
+		<form class="form-signin" action="#" onSubmit="return bewareLogin(this);">
 			<h1>{{siteTitle}}</h1>
 			<hr/>
 			<h3 class="form-signin-heading">Please login</h3>
 			{% if error %}
 			<div class="alert alert-danger" role="alert">{{ error }}</div>
 			{% endif %}
+
+			<div id="error-popup" class="alert alert-danger alert-dismissible" style="max-width: 570px; margin: 20px; display: none;" role="alert">
+  				<a class="close" onclick="$('.alert').hide()">×</a>
+  				<div id="error-popup-message"></div>
+			</div>
 
 	    	<label for="user" class="sr-only">Tag ID / Username</label>
 			<input type="text" class="form-control" name="user" placeholder="Username/Tag" required autofocus/><br/>
