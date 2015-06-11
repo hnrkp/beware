@@ -6,13 +6,14 @@ function checkError(response, status, xhr) {
       // login again
       window.location.replace("index?error=Session%20expired,%20please%20login%20again.");
     } else if (xhr.status == 0) {
-      alert("Unknown network error occured.");
+      $("#error-popup-message").html("Unknown network error occured");
+      $("#error-popup").show();
     } else if (xhr.status == 418) {
       $("#error-popup-message").html(response);
       $("#error-popup").show();
     } else {
-    	// FIXME popup?
-    	alert(xhr.status + ": " + response);
+      $("#error-popup-message").html("Unparsed error " + xhr.status + ": " + xhr.responseText);
+      $("#error-popup").show();
     }
   }
 }
@@ -33,8 +34,12 @@ function bewareLogin(form) {
 				$('#loading-indicator').hide();
 				$("#error-popup-message").html(xhr.responseText);
 				$("#error-popup").show();
+			} else if (xhr.status == 0) {
+				//$('#loading-indicator').hide();
+				$("#error-popup-message").html("Network error occurred. Server down?");
+				$("#error-popup").show();
 			} else {
-		    	alert(xhr.status + ": " + xhr.responseText);
+				alert("Unparsed error " + xhr.status + ": " + xhr.responseText);
 			}
 		},
 	});
