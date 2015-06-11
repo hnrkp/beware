@@ -3,6 +3,7 @@
 {% block content%}
 
 <h2>{{siteTitle}}</h2>
+
 <hr/>
   <div class="bs-example bs-example-tabs" role="tabpanel" data-example-id="togglable-tabs">
     <ul id="myTab" class="nav nav-tabs" role="tablist">
@@ -10,10 +11,14 @@
     	<li role="presentation"><a role="tab" id="obj-{{ index }}-tab" data-toggle="tab"  aria-controls="obj-{{ index }}-tab" >{{ name }}</a></li>
 	  {% endfor %}
 	  </ul>
+	
     <div id="reservations-content" class="tab-content">
-    Reservations go here. Please select your object.
+    Reservations will appear here. Please select your object.
     </div>
   </div>
+
+<br/>
+<button id="logout-btn" class="btn btn-sm btn-warning active"> Logout </button>
 
 <script type="text/javascript">
 $(document).ready(function(){
@@ -24,6 +29,17 @@ $(document).ready(function(){
         $(this).tab('show');
     });
 {% endfor %}
+});
+
+$("#logout-btn").click(function(e) {
+	jQuery.ajax({
+        type: "GET",
+        url: "logout",
+        success: function (response) {
+        	window.location.replace("index");
+        },
+        error: checkXhr,
+    });
 });
 </script>
 

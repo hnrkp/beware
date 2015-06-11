@@ -97,6 +97,11 @@ class Login(Resource):
         
         return server.NOT_DONE_YET
 
+class Logout(Resource):
+    def render_GET(self, request):
+        request.getSession().expire()
+        return toUrl("index", request)
+
 class ListObjects(Resource):
     def async_errback(self, failure, request):
         failure.printTraceback()
@@ -276,6 +281,7 @@ if __name__ == "__main__":
     root.putChild("style.css", static.File("static/style.css"))
     root.putChild("beware.js", static.File("static/beware.js"))
     root.putChild("login", Login())
+    root.putChild("logout", Logout())
     root.putChild("objects", ListObjects())
     root.putChild("reservations", ListReservations())
     root.putChild("reserve", MakeReservation())
