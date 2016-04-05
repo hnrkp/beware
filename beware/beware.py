@@ -41,6 +41,8 @@ def toUrl(url, request):
 def defaultErrback(failure, request):
     failure.printTraceback()
     
+    print(failure)
+    
     # We usually assume logged out on failure
     request.write(relogin(request))
     request.finish()
