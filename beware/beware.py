@@ -8,10 +8,16 @@ from datetime import datetime, timedelta
 
 from bewatorcgi import BewatorCgi
 
+import os, inspect
+
 # Templating
 from jinja2 import Environment, PackageLoader
 
 URL = "localhost"
+
+from os.path import dirname
+
+curdir = dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 env = Environment(loader=PackageLoader('beware', 'templates'))
 
@@ -279,9 +285,9 @@ class CancelReservation(Resource):
 if __name__ == "__main__":
     root = Index()
     root.putChild("index", Index())
-    root.putChild("loading.gif", static.File("static/loading.gif"))
-    root.putChild("style.css", static.File("static/style.css"))
-    root.putChild("beware.js", static.File("static/beware.js"))
+    root.putChild("loading.gif", static.File(curdir + "/static/loading.gif"))
+    root.putChild("style.css", static.File(curdir + "/static/style.css"))
+    root.putChild("beware.js", static.File(curdir + "/static/beware.js"))
     root.putChild("login", Login())
     root.putChild("logout", Logout())
     root.putChild("objects", ListObjects())
