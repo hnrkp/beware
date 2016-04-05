@@ -188,8 +188,12 @@ class ListReservations(Resource):
 
         if "fromTs" in request.args and request.args["fromTs"][0].isdigit():
             myTime = int(request.args["fromTs"][0])
+        elif hasattr(session, "my_time"):
+            myTime = session.my_time
         else:
             myTime = startTime
+        
+        session.my_time = myTime
         
         d = threads.deferToThread(session.bcgi.getReservations, session.bewator_session, obj, myTime)
         d.addCallback(self.async_finish, request, obj, nowTime, myTime)
