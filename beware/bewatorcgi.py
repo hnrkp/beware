@@ -101,6 +101,7 @@ class BewatorCgi:
             of.read(1)
             i += 1
         
+        objects.sort(key=lambda x: x[1])
         return objects
 
     def getTime(self, sessionId, obj):
