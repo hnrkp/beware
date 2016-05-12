@@ -92,7 +92,7 @@ class BewatorCgi:
         i = 1
         
         while of.read(1) == '1':
-            l = int(of.read(1))
+            l = ord(of.read(1)) - ord('0')
         
             self.__skipDelimiter(of)
         
