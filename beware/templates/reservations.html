@@ -6,7 +6,7 @@
 	{% set lastDate = r.start.date() %}
 	{% set dayOfWeek = weekdays[r.start.date().weekday()] %}
 	</div><div class="res-date">
-	<button type="button" class="btn btn-warning btn-sm active">{{ dayOfWeek }}<br/>{{ lastDate }}</button>
+	<button type="button" class="btn btn-default btn-sm active">{{ dayOfWeek }}<br/>{{ lastDate }}</button>
 	<br/>
 	{% endif %}
     {% if r.state == 0 %}
@@ -26,20 +26,19 @@
     <br/>
 {% endfor %}
 </div>
-<button id="next-btn" type="button" class="btn btn-warning btn-sm active">Next -&gt;</button>
-<br/>
-<button id="prev-btn" type="button" class="btn btn-warning btn-sm active">&lt;- Prev</button>
 
 <script type="text/javascript">
 curTs = {{ curTs }};
 
 $(function() {
+  $("#next-btn").off("click");
   $("#next-btn").click(function(e) {
   	loadReservations({{ object }}, {{ nextTs }});
   });
 });
 
 $(function() {
+  $("#prev-btn").off("click");
   $("#prev-btn").click(function(e) {
     loadReservations({{ object }}, {{ prevTs }});
   });

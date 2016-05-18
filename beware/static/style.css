@@ -1,6 +1,7 @@
 body {
   padding-top: 40px;
   padding-bottom: 40px;
+  margin-left: 5px;
   background-color: #eee;
 }
 
@@ -9,6 +10,13 @@ body {
 	width: auto;
 	max-width: auto;
 	float: left;
+}
+
+.navibuttons {
+	padding-top: 20px;
+	margin-top: 20px;
+	margin-left: 20px;
+	clear: left;
 }
 
 .form-signin {
