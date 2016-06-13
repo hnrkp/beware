@@ -39,6 +39,7 @@ $(document).ready(function(){
         $(this).tab('show');
     });
 {% endfor %}
+    $("#myTab a#obj-{{ objects[0][0] }}-tab").click();
 });
 
 $("#logout-btn").click(function(e) {
