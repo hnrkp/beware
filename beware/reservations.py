@@ -9,11 +9,15 @@ class reservation(object):
         self.start = datetime(1990, 1, 1, 0, 0) + timedelta(seconds=self.startTs)
         self.end = datetime(1990, 1, 1, 0, 0) + timedelta(seconds=self.endTs)
 
-    
     def getDescriptiveString(self):
         state = ['Free', 'Reserved', 'Reserved by you', 'In the past']
         
         return str(self.start) + " - " + str(self.end.time()) + ": " + state[self.state]
 
     def getIntervalString(self):
-        return str(self.start.time()) + "-" + str(self.end.time())
+        if self.start.minute == 0 and self.end.minute == 0:
+            ds = self.start.strftime("%H") + " - " + self.end.strftime("%H")
+        else:
+            ds = self.start.strftime("%H:%M") + " - " + self.end.strftime("%H:%M")
+        
+        return ds

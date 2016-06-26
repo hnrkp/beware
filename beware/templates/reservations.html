@@ -5,23 +5,23 @@
 	{% if lastDate != r.start.date() %}
 	{% set lastDate = r.start.date() %}
 	{% set dayOfWeek = weekdays[r.start.date().weekday()] %}
-	</div><div class="res-date btn-toolbar" style="margin: 0px;">
+	</div><div class="res-date btn-toolbar" style="margin: 5px;">
 	<button type="button" class="btn btn-reservation btn-default active">{{ dayOfWeek }}<br/>{{ lastDate.strftime("%m-%d") }}</button>
 	<br/>
 	{% endif %}
     {% if r.state == 0 %}
     <button onclick="javascript:makeReservation({{ r.object }}, {{ r.startTs }}, {{ r.endTs }});"
-       class="btn btn-reservation btn-default" role="button">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
+       class="btn btn-reservation btn-default" role="button">{{ r.getIntervalString() }}</button>
     {% endif %}
     {% if r.state == 1 %}
-    <button type="button" class="btn btn-reservation btn-danger active">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
+    <button type="button" class="btn btn-reservation btn-danger active">{{ r.getIntervalString() }}</button>
     {% endif %}
     {% if r.state == 2 %}
     <button onclick="javascript:cancelReservation({{ r.object }}, {{ r.startTs }});"
-	   class="btn btn-reservation btn-success active" role="button">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
+	   class="btn btn-reservation btn-success active" role="button">{{ r.getIntervalString() }}</button>
     {% endif %}
     {% if r.state == 3 %}
-    <button type="button" class="btn btn-reservation btn-default disabled" style="background-color: darkgrey;">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
+    <button type="button" class="btn btn-reservation btn-default disabled" style="background-color: darkgrey;">{{ r.getIntervalString() }}</button>
     {% endif %}
     <br/>
 {% endfor %}
