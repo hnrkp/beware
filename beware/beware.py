@@ -5,6 +5,7 @@ from twisted.internet import reactor, threads
 from twisted.web import static, server, html
 from twisted.web.resource import Resource
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 from bewatorcgi import BewatorCgi
 
@@ -70,6 +71,15 @@ def defaultErrback(failure, request):
     request.finish()
     return None
 
+def validateCsrfToken(session, request):
+    token = request.getHeader('X-CSRF-Token')
+    
+    if token != session.csrf_token:
+        print("token mismatch, %s vs %s" % (token, session.csrf_token))
+        return False 
+    
+    return True
+
 class Index(Resource):
     def getChild(self, name, request):
         if name == '':
@@ -100,6 +110,7 @@ class Login(Resource):
         print("Login successful for user " + user + " from " + str(request.getClientIP()))
         
         request.getSession().bewator_session = int(sessionId)
+        request.getSession().csrf_token = str(uuid4())
         
         request.write(toUrl("objects", request))
         request.finish()
@@ -123,7 +134,14 @@ class Login(Resource):
 
 class Logout(Resource):
     def render_GET(self, request):
-        request.getSession().expire()
+        session = request.getSession()
+        if not hasattr(session, "bewator_session"):
+            return sessionExpired(request)
+
+        if not validateCsrfToken(session, request):
+            return badRequest(request, "csrf token error")
+        
+        session.expire()
         return toUrl("index", request)
 
 class ListObjects(Resource):
@@ -151,7 +169,8 @@ class ListObjects(Resource):
             return
         
         template = env.get_template("objects.html")
-        request.write(template.render(siteRenderArgs, objects=objects).encode("utf-8"))
+        request.write(template.render(siteRenderArgs, csrf_token = request.getSession().csrf_token,
+                                      objects=objects).encode("utf-8"))
         request.finish()
     
     def render_GET(self, request):
@@ -205,7 +224,10 @@ class ListReservations(Resource):
 
         if not obj.isdigit():
             return badRequest(request, "nasty-error!")
-        
+
+        if not validateCsrfToken(session, request):
+            return badRequest(request, "csrf token error")
+
         obj = int(obj)
 
         dt = datetime.now()
@@ -271,6 +293,9 @@ class MakeReservation(Resource):
         if not start.isdigit() or not end.isdigit() or not obj.isdigit():
             return badRequest(request, "nasty-error!")
         
+        if not validateCsrfToken(session, request):
+            return badRequest(request, "csrf token error")
+        
         obj = int(obj)
         start = int(start)
         end = int(end)
@@ -306,7 +331,10 @@ class CancelReservation(Resource):
         
         if not start.isdigit() or not obj.isdigit():
             return badRequest(request, "nasty-error!")
-        
+
+        if not validateCsrfToken(session, request):
+            return badRequest(request, "csrf token error")
+
         obj = int(obj)
         start = int(start)
         

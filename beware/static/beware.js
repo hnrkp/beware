@@ -62,7 +62,7 @@ function loadReservations(object, timestamp) {
 
 function checkXhr(xhr, status, errorThrown) {
 	// Since make, cancel won't hide on global events..
-	$('#loading-indicator').hide();
+	ajaxLoadDone();
 	
 	// jQuery is just trippy..
 	return checkError(xhr.responseText, status, xhr);
@@ -73,9 +73,9 @@ function makeReservation(object, fromTs, toTs) {
         type: "GET",
         url: "reserve?object=" + object + "&start=" + fromTs + "&end=" + toTs,
         global: false,
-        beforeSend: function(response) {
-        	// before, but not after.
-        	$('#loading-indicator').show();
+        beforeSend: function(request) {
+        	// before, but not after.req
+        	ajaxPreload(request);
         },
         success: function (response) {
         	loadReservations(curObject, curTs);
@@ -89,9 +89,9 @@ function cancelReservation(object, fromTs) {
         type: "GET",
         url: "cancel?object=" + object + "&start=" + fromTs,
         global: false,
-        beforeSend: function(response) {
+        beforeSend: function(request) {
         	// before, but not after.
-        	$('#loading-indicator').show();
+        	ajaxPreload(request);
         },
         success: function (response) {
         	loadReservations(curObject, curTs);

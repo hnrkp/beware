@@ -47,6 +47,10 @@ $("#logout-btn").click(function(e) {
 	jQuery.ajax({
         type: "GET",
         url: "logout",
+        beforeSend: function(request) {
+            // before, but not after.req
+            ajaxPreload(request);
+        },
         success: function (response) {
         	window.location.replace("index");
         },

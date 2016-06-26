@@ -26,12 +26,21 @@
 <script type="text/javascript">
 $.ajaxSetup({ cache: false });
 
-$(document).ajaxSend(function(event, request, settings) {
+function ajaxPreload(request) {
     $('#loading-indicator').show();
+    request.setRequestHeader('X-CSRF-Token', '{{ csrf_token }}');
+}
+
+function ajaxLoadDone() {
+	$('#loading-indicator').hide();
+}
+
+$(document).ajaxSend(function(event, request, settings) {
+	ajaxPreload(request);
 });
 
 $(document).ajaxComplete(function(event, request, settings) {
-    $('#loading-indicator').hide();
+    ajaxLoadDone();
 });
 </script>
 
