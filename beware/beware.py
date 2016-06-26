@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from bewatorcgi import BewatorCgi
 
-import os, inspect
+import os, inspect, getopt
 
 # Templating
 from jinja2 import Environment, PackageLoader
@@ -21,9 +21,25 @@ curdir = dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 env = Environment(loader=PackageLoader('beware', 'templates'))
 
-weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+siteRenderArgs = {}
 
-siteRenderArgs = {'weekdays' : weekdays}
+def doTranslation(lang):
+    global siteRenderArgs
+    
+    # defaults
+    weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    navitext = { 'next': "Next -->", 'prev': "<-- Prev", 'logout': "Logout", 'submit': 'Login',\
+                'tagid': 'Tag ID / Username', 'password': 'Password / PIN', 'login-banner': "Please login" }
+    
+    # overrides
+    if lang == 'se':
+        weekdays = ['M', 'T', 'O', 'T', 'F', 'L', 'S']
+        navitext = { "next": u"Framåt -->", "prev": u"<-- Bakåt", "logout": u"Logga ut", "submit": u"Logga in",\
+                     "tagid": u"Tagg-ID / Användarnamn", 'password': u"Lösenord / PIN", "login-banner": u"Logga in" }
+
+    
+    siteRenderArgs['weekdays'] = weekdays
+    siteRenderArgs['navitext'] = navitext
 
 def badRequest(request, errorText):
     template = env.get_template("error.html")
@@ -299,13 +315,11 @@ if __name__ == "__main__":
     root.putChild("reserve", MakeReservation())
     root.putChild("cancel", CancelReservation())
     
-    import sys, getopt
-    
     def usage():
         print("usage: ", sys.argv[0], " -H <bewator-applet-url> [-t <title>] [-p <port>]", file=sys.stderr, sep="")
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hH:t:p:", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "hH:t:p:l:c:", ["help"])
     except getopt.GetoptError as err:
         # print help information and exit:
         usage()
@@ -315,6 +329,10 @@ if __name__ == "__main__":
     host = None
     port = 31337
     siteTitle = u"Beware Bewator"
+    
+    customCss = False
+    
+    doTranslation("default")
     
     for o, a in opts:
         if o == "-v":
@@ -326,10 +344,18 @@ if __name__ == "__main__":
             host = a
         elif o == "-t":
             siteTitle = a.decode("utf-8")
-        elif o == '-p':
+        elif o == "-p":
             port = int(a)
+        elif o == "-l":
+            doTranslation(a)
+        elif o == "-c":
+            root.putChild("custom.css", static.File(curdir + "/static/" + a))
+            customCss = True
         else:
             assert False, "unhandled option"
+
+    if not customCss:
+        root.putChild("custom.css", static.File(curdir + "/static/custom.css"))
 
     if host is None:
         usage()

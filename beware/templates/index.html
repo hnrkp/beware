@@ -6,7 +6,7 @@
 		<form class="form-signin" action="#" onSubmit="return bewareLogin(this);">
 			<h1>{{siteTitle}}</h1>
 			<hr/>
-			<h3 class="form-signin-heading">Please login</h3>
+			<h3 class="form-signin-heading">{{ navitext['login-banner'] }}</h3>
 			{% if error %}
 			<div class="alert alert-danger" role="alert">{{ error }}</div>
 			{% endif %}
@@ -16,11 +16,11 @@
   				<div id="error-popup-message"></div>
 			</div>
 
-	    	<label for="user" class="sr-only">Tag ID / Username</label>
-			<input type="text" class="form-control" name="user" placeholder="Username/Tag" required autofocus/><br/>
-			<label for="password" class="sr-only">Password</label>
-			<input type="password" name="password" class="form-control" placeholder="Password" required/><br/>
-	        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+	    	<label for="user" class="sr-only">{{ navitext['tagid'] }}</label>
+			<input type="text" class="form-control" name="user" placeholder="{{ navitext['tagid'] }}" required autofocus/><br/>
+			<label for="password" class="sr-only">{{ navitext['password'] }}</label>
+			<input type="password" name="password" class="form-control" placeholder="{{ navitext['password'] }}" required/><br/>
+	        <button class="btn btn-lg btn-primary btn-block" type="submit">{{ navitext['submit'] }}</button>
 		</form>
 	</div>
 {% endblock %}

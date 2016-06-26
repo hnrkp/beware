@@ -2,10 +2,11 @@
 {% block title %}Index{% endblock %}
 {% block content%}
 
-<h2>{{siteTitle}}</h2>
+<h2 class="text-center">{{siteTitle}}</h2>
 
 <hr/>
-  <div class="bs-example bs-example-tabs" role="tabpanel" data-example-id="togglable-tabs">
+  <div class="text-center">
+  <div class="bs-example bs-example-tabs text-center" role="tabpanel" data-example-id="togglable-tabs" style="display: inline-block;">
     <ul id="myTab" class="nav nav-tabs" role="tablist">
       {% for index, name in objects %}
     	<li role="presentation"><a role="tab" id="obj-{{ index }}-tab" data-toggle="tab"  aria-controls="obj-{{ index }}-tab" >{{ name }}</a></li>
@@ -16,20 +17,20 @@
 	  	<a class="close" onclick="$('#error-popup').hide()">×</a>
   		<div id="error-popup-message"></div>
 	</div>
-	
-	
-    <div id="reservations-content" class="tab-content">
-    Reservations will appear here. Please select your object.
-    </div>
-  </div>
 
-<br/>
-<div class="navibuttons">
-<button id="prev-btn" type="button" class="btn btn-default btn-sm active">&lt;- Prev</button>
-<button id="logout-btn" class="btn btn-sm btn-default active"> Logout </button>
-<button id="next-btn" type="button" class="btn btn-default btn-sm active">Next -&gt;</button>
+	<div style="display: inline-block">	
+	    <div id="reservations-content" class="tab-content">
+		    Reservations will appear here. Please select your object.
+	    </div>
+		<br/>
+		<div class="navibuttons text-center">
+			<button id="prev-btn" type="button" class="btn btn-primary btn-sm active">{{ navitext['prev'] }}</button>
+			<button id="logout-btn" class="btn btn-sm btn-primary active">{{ navitext['logout'] }}</button>
+			<button id="next-btn" type="button" class="btn btn-primary btn-sm active">{{ navitext['next'] }}</button>
+		</div>
+	</div>
 </div>
-
+</div>
 <script type="text/javascript">
 $(document).ready(function(){
 {% for index, name in objects %}
