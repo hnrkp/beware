@@ -2,7 +2,6 @@ body {
   padding-top: 40px;
   padding-bottom: 40px;
   margin-left: 5px;
-  background-color: #eee;
 }
 
 .res-date {
@@ -13,9 +12,7 @@ body {
 }
 
 .navibuttons {
-	padding-top: 20px;
-	margin-top: 20px;
-	margin-left: 20px;
+	padding-top: 10px;
 	clear: left;
 }
 
@@ -64,4 +61,14 @@ body {
   z-index: 9999;
   opacity: 0.4;
   background: url('loading.gif') 50% 50% no-repeat rgb(249,249,249);
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+	background-color: #f1f1f1;
+	color: inherit;
+}
+
+.btn-reservation {
+	min-height: 60px;
+	margin-top: 5px;
 }

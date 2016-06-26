@@ -5,23 +5,23 @@
 	{% if lastDate != r.start.date() %}
 	{% set lastDate = r.start.date() %}
 	{% set dayOfWeek = weekdays[r.start.date().weekday()] %}
-	</div><div class="res-date">
-	<button type="button" class="btn btn-default btn-sm active">{{ dayOfWeek }}<br/>{{ lastDate }}</button>
+	</div><div class="res-date btn-toolbar" style="margin: 0px;">
+	<button type="button" class="btn btn-reservation btn-default active">{{ dayOfWeek }}<br/>{{ lastDate.strftime("%m-%d") }}</button>
 	<br/>
 	{% endif %}
     {% if r.state == 0 %}
-    <a onclick="javascript:makeReservation({{ r.object }}, {{ r.startTs }}, {{ r.endTs }});"
-       class="btn btn-default btn-sm" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
+    <button onclick="javascript:makeReservation({{ r.object }}, {{ r.startTs }}, {{ r.endTs }});"
+       class="btn btn-reservation btn-default" role="button">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
     {% endif %}
     {% if r.state == 1 %}
-    <button type="button" class="btn btn-danger btn-sm active">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</button>
+    <button type="button" class="btn btn-reservation btn-danger active">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
     {% endif %}
     {% if r.state == 2 %}
-    <a onclick="javascript:cancelReservation({{ r.object }}, {{ r.startTs }});"
-	   class="btn btn-success btn-sm active" role="button">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</a>
+    <button onclick="javascript:cancelReservation({{ r.object }}, {{ r.startTs }});"
+	   class="btn btn-reservation btn-success active" role="button">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
     {% endif %}
     {% if r.state == 3 %}
-    <button type="button" class="btn btn-default btn-sm disabled" style="background-color: darkgrey;">{{ r.start.time() }}<br/>-<br/>{{ r.end.time() }}</button>
+    <button type="button" class="btn btn-reservation btn-default disabled" style="background-color: darkgrey;">{{ r.start.strftime("%H") }}-{{ r.end.strftime("%H") }}</button>
     {% endif %}
     <br/>
 {% endfor %}
