@@ -76,33 +76,30 @@ class BewatorCgi:
         
         f = StringIO(buf)
         
-        s = f.read()
-        
-        of = StringIO(s)
-        
-        of.read(1)
-        r = of.read(1)
-        if r != '0':
-            raise Exception("Response: " + str(ord(r)))
-        
-        of.read(1)
+        f.read(1)
+        status = ord(f.read(1))
+
+        if status != 48:
+            return (status, None)
+
+        f.read(1)
         
         objects = []
 
         i = 1
         
-        while of.read(1) == '1':
-            l = ord(of.read(1)) - ord('0')
+        while f.read(1) == '1':
+            l = ord(f.read(1)) - ord('0')
         
-            self.__skipDelimiter(of)
+            self.__skipDelimiter(f)
         
-            ostr = of.read(l).decode('iso-8859-1')
+            ostr = f.read(l).decode('iso-8859-1')
             objects.append((i, ostr))
-            of.read(1)
+            f.read(1)
             i += 1
         
         objects.sort(key=lambda x: x[1])
-        return objects
+        return (status, objects)
 
     def getTime(self, sessionId, obj):
         self.conn.request("GET", "/time.cgi?session=%d&object=%d" % (sessionId, obj))

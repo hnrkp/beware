@@ -129,13 +129,27 @@ class Logout(Resource):
 class ListObjects(Resource):
     def async_errback(self, failure, request):
         failure.printTraceback()
-        
+        print(failure)
+    
         # We usually assume logged out on failure
-        sessionExpired(request)
+        request.write(sessionExpired(request))
         request.finish()
         return None
     
-    def async_finish(self, objects, request):
+    def async_finish(self, tup, request):
+        (res, objects) = tup
+        
+        if res == 49:
+            request.write(sessionExpired(request))
+            request.finish()
+            return
+        
+        if res != 48:
+            print("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
+            request.write(sessionExpired(request))
+            request.finish()
+            return
+        
         template = env.get_template("objects.html")
         request.write(template.render(siteRenderArgs, objects=objects).encode("utf-8"))
         request.finish()
