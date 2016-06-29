@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from bewatorcgi import BewatorCgi
 
-import os, inspect, getopt
+import sys, os, inspect, getopt
 
 # Templating
 from jinja2 import Environment, PackageLoader
