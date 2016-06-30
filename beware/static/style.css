@@ -68,10 +68,6 @@ body {
 	color: inherit;
 }
 
-.btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
-	margin-left: 0px;
-}
-
 .btn-reservation {
 	width: 100%;
 	min-height: 60px;

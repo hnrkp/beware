@@ -5,7 +5,7 @@
 	{% if lastDate != r.start.date() %}
 	{% set lastDate = r.start.date() %}
 	{% set dayOfWeek = weekdays[r.start.date().weekday()] %}
-	</div><div class="res-date btn-toolbar" style="margin: 5px;">
+	</div><div class="res-date" style="margin: 5px;">
 	<button type="button" class="btn btn-reservation btn-default active">{{ dayOfWeek }}<br/>{{ lastDate.strftime("%m-%d") }}</button>
 	<br/>
 	{% endif %}
