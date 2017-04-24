@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from bewatorcgi import BewatorCgi
 
-import sys, os, inspect, getopt
+import sys, os, inspect, getopt, logging
 
 # Templating
 from jinja2 import Environment, PackageLoader
@@ -64,7 +64,7 @@ def toUrl(url, request):
 def defaultErrback(failure, request):
     failure.printTraceback()
     
-    print(failure)
+    logging.error(failure)
     
     # We usually assume logged out on failure
     request.write(relogin(request))
@@ -75,7 +75,7 @@ def validateCsrfToken(session, request):
     token = request.getHeader('X-CSRF-Token')
     
     if token != session.csrf_token:
-        print("token mismatch, %s vs %s" % (token, session.csrf_token))
+        logging.error("token mismatch, %s vs %s" % (token, session.csrf_token))
         return False 
     
     return True
@@ -101,13 +101,13 @@ class Login(Resource):
         user = request.getSession().user
         
         if sessionId < 0:
-            print("Login failed for user " + user + " from " + str(request.getClientIP()))
+            logging.info("Login failed for user " + user + " from " + str(request.getClientIP()))
             request.setResponseCode(401)
             request.write("Login failed")
             request.finish()
             return None
         
-        print("Login successful for user " + user + " from " + str(request.getClientIP()))
+        logging.info("Login successful for user " + user + " from " + str(request.getClientIP()))
         
         request.getSession().bewator_session = int(sessionId)
         request.getSession().csrf_token = str(uuid4())
@@ -147,7 +147,7 @@ class Logout(Resource):
 class ListObjects(Resource):
     def async_errback(self, failure, request):
         failure.printTraceback()
-        print(failure)
+        logging.warning(failure)
     
         # We usually assume logged out on failure
         request.write(sessionExpired(request))
@@ -163,7 +163,7 @@ class ListObjects(Resource):
             return
         
         if res != 48:
-            print("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
+            logging.error("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
             request.write(sessionExpired(request))
             request.finish()
             return
@@ -194,7 +194,7 @@ class ListReservations(Resource):
             return
         
         if res != 48:
-            print("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
+            logging.error("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
             request.write(relogin(request))
             request.finish()
             return
@@ -358,10 +358,10 @@ if __name__ == "__main__":
     root.putChild("cancel", CancelReservation())
     
     def usage():
-        print("usage: ", sys.argv[0], " -H <bewator-applet-url> [-t <title>] [-p <port>]", file=sys.stderr, sep="")
+        print("usage: ", sys.argv[0], " -H <bewator-applet-url> [-t <title>] [-p <port>] --logfile=file.log", file=sys.stderr, sep="")
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hH:t:p:l:c:", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "hH:t:p:l:c:", ["help", "logfile="])
     except getopt.GetoptError as err:
         # print help information and exit:
         usage()
@@ -376,6 +376,8 @@ if __name__ == "__main__":
     
     doTranslation("default")
     
+    logfilename = "beware.log"
+
     for o, a in opts:
         if o == "-v":
             verbose = True
@@ -393,6 +395,8 @@ if __name__ == "__main__":
         elif o == "-c":
             root.putChild("custom.css", static.File(curdir + "/static/" + a))
             customCss = True
+        elif o == "--logfile":
+            logfilename = a
         else:
             assert False, "unhandled option"
 
@@ -406,8 +410,16 @@ if __name__ == "__main__":
     URL = host
     
     siteRenderArgs['siteTitle'] = siteTitle
-    
-    print("Starting Beware!\n\nURL = \"" + URL + "\"\nPort = " + str(port) + "\nTitle = \"" + siteTitle + "\"\n")
-    
+   
+    logfmt = "[%(asctime)s] %(message)s"
+    formatter = logging.Formatter(logfmt)
+
+    logging.basicConfig(format=logfmt, filename=logfilename, level=logging.DEBUG)
+    consoleHandler = logging.StreamHandler(sys.stdout)
+    consoleHandler.setFormatter(formatter)
+
+    logging.getLogger().addHandler(consoleHandler)
+
+    logging.info("Starting Beware!\n\nURL = \"" + URL + "\"\nPort = " + str(port) + "\nTitle = \"" + siteTitle + "\"\n")
     reactor.listenTCP(port, server.Site(root))
     reactor.run()
