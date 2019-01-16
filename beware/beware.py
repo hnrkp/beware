@@ -97,6 +97,15 @@ class Index(Resource):
         return template.render(siteRenderArgs, error=error).encode("utf-8")
 
 class Login(Resource):
+    def async_errback(self, failure, request):
+        failure.printTraceback()
+        logging.warning(failure)
+    
+        request.setResponseCode(401)
+        request.write("Login failed due to an error (server down?)")
+        request.finish()
+        return None
+
     def async_finish(self, sessionId, request):
         user = request.getSession().user
         
@@ -128,7 +137,7 @@ class Login(Resource):
 
         d = threads.deferToThread(session.bcgi.login, html.escape(user), password)
         d.addCallback(self.async_finish, request)
-        d.addErrback(defaultErrback, request)
+        d.addErrback(self.async_errback, request)
         
         return server.NOT_DONE_YET
 
