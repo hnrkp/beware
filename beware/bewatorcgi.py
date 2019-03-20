@@ -221,7 +221,7 @@ class BewatorCgi:
             else:
                 b = 0
 
-            ddt = dt + timedelta(days = i/k)
+            ddt = dt + timedelta(days = i/nintervals)
 
             startOfDay = (ddt - datetime(1990, 1, 1, 0, 0)).total_seconds()
         
