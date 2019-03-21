@@ -207,17 +207,30 @@ class ListReservations(Resource):
             request.write(relogin(request))
             request.finish()
             return
-        
-        # Mark reservations in the past as "3".
+
+        rd = []
+        cur_d = []
+
         for r in reservations:
+            # Mark reservations in the past as "3".
             if r.endTs < nowTime:
                 r.state = 3
+            
+            if len(cur_d) > 0:
+                if cur_d[0].start.date() != r.start.date():
+                    rd.append(cur_d)
+                    cur_d = []
+            
+            cur_d.append(r)
         
+        if len(cur_d) > 0:
+            rd.append(cur_d)
+
         nextTs = myTime + 86400 * 7
         prevTs = myTime - 86400 * 7
         
         request.write(env.get_template("reservations.html").render(siteRenderArgs, object=obj, curTs=myTime, prevTs=prevTs, nextTs=nextTs,
-                                                            reservations=reservations).encode("utf-8"))
+                                                            reservations=rd).encode("utf-8"))
         request.finish()
         
     
