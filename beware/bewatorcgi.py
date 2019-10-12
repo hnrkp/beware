@@ -10,7 +10,7 @@ class BewatorCgi:
     def __init__(self, hostname):
         self.hostname = hostname
         
-        self.conn = httplib.HTTPConnection(hostname)
+        self.conn = httplib.HTTPConnection(hostname, timeout=60)
     
     def __skipDelimiter(self, f):
         d = f.read(1)
