@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+
 
 from twisted.internet import reactor, threads
 from twisted.web import static, server, html
@@ -35,8 +35,8 @@ def doTranslation(lang):
     # overrides
     if lang == 'se':
         weekdays = ['M', 'T', 'O', 'T', 'F', 'L', 'S']
-        navitext = { "next": u"Framåt -->", "prev": u"<-- Bakåt", "logout": u"Logga ut", "submit": u"Logga in",\
-                     "tagid": u"Tagg-ID / Användarnamn", 'password': u"Lösenord / PIN", "login-banner": u"Logga in" }
+        navitext = { "next": "Framåt -->", "prev": "<-- Bakåt", "logout": "Logga ut", "submit": "Logga in",\
+                     "tagid": "Tagg-ID / Användarnamn", 'password': "Lösenord / PIN", "login-banner": "Logga in" }
 
     
     siteRenderArgs['weekdays'] = weekdays
@@ -53,13 +53,13 @@ def bewatorRequestError(request, errorText):
 
 def relogin(request):
     request.setResponseCode(401)
-    return "Please login again"
+    return b"Please login again"
     
 def sessionExpired(request):
-    return toUrl("index?error=Session%20expired,%20please%20login%20again.", request)
+    return toUrl(b"index?error=Session%20expired,%20please%20login%20again.", request)
 
 def toUrl(url, request):
-    return "<script type=\"text/javascript\">window.location.replace(\"" + url + "\");</script>"
+    return b"<script type=\"text/javascript\">window.location.replace(\"" + url + b"\");</script>"
     
 def defaultErrback(failure, request):
     failure.printTraceback()
@@ -72,7 +72,7 @@ def defaultErrback(failure, request):
     return None
 
 def validateCsrfToken(session, request):
-    token = request.getHeader('X-CSRF-Token')
+    token = request.getHeader(b'X-CSRF-Token').decode()
     
     if token != session.csrf_token:
         logging.error("token mismatch, %s vs %s" % (token, session.csrf_token))
@@ -91,8 +91,8 @@ class Index(Resource):
         
         error = None
         
-        if "error" in request.args:
-            error = html.escape(request.args["error"][0])
+        if b"error" in request.args:
+            error = html.escape(request.args[b"error"][0].decode())
         
         return template.render(siteRenderArgs, error=error).encode("utf-8")
 
@@ -102,7 +102,7 @@ class Login(Resource):
         logging.warning(failure)
     
         request.setResponseCode(401)
-        request.write("Login failed due to an error (server down?)")
+        request.write(b"Login failed due to an error (server down?)")
         request.finish()
         return None
 
@@ -112,30 +112,30 @@ class Login(Resource):
         if sessionId < 0:
             logging.info("Login failed for user " + user + " from " + str(request.getClientIP()))
             request.setResponseCode(401)
-            request.write("Login failed")
+            request.write(b"Login failed")
             request.finish()
             return None
         
-        logging.info("Login successful for user " + user + " from " + str(request.getClientIP()))
+        logging.info("Login successful for user " + str(user) + " from " + str(request.getClientAddress()))
         
         request.getSession().bewator_session = int(sessionId)
         request.getSession().csrf_token = str(uuid4())
         
-        request.write(toUrl("objects", request))
+        request.write(toUrl(b"objects", request))
         request.finish()
 
     def render_POST(self, request):
-        if not "user" in request.args or not "password" in request.args:
-            return badRequest(request, "Please don't call me without the proper parameters!")
+        if not b"user" in request.args or not b"password" in request.args:
+            return badRequest(request, b"Please don't call me without the proper parameters!")
         
-        user = request.args["user"][0]
-        password = request.args["password"][0]
+        user = request.args[b"user"][0]
+        password = request.args[b"password"][0]
         
         session = request.getSession()
         session.user = user
         session.bcgi = BewatorCgi(URL)
 
-        d = threads.deferToThread(session.bcgi.login, html.escape(user), password)
+        d = threads.deferToThread(session.bcgi.login, html.escape(user.decode()), password)
         d.addCallback(self.async_finish, request)
         d.addErrback(self.async_errback, request)
         
@@ -151,7 +151,7 @@ class Logout(Resource):
             return badRequest(request, "csrf token error")
         
         session.expire()
-        return toUrl("index", request)
+        return toUrl(b"index", request)
 
 class ListObjects(Resource):
     def async_errback(self, failure, request):
@@ -172,7 +172,7 @@ class ListObjects(Resource):
             return
         
         if res != 48:
-            logging.error("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
+            logging.error("ERROR: Res in listobjects was something not OK, throw relogin (" + str(res) +")")
             request.write(sessionExpired(request))
             request.finish()
             return
@@ -203,7 +203,7 @@ class ListReservations(Resource):
             return
         
         if res != 48:
-            logging.error("ERROR: Res was something not OK, throw relogin (" + str(res) +")")
+            logging.error("ERROR: Res in listresv was something not OK, throw relogin (" + str(res) +")")
             request.write(relogin(request))
             request.finish()
             return
@@ -228,7 +228,7 @@ class ListReservations(Resource):
 
         nextTs = myTime + 86400 * 7
         prevTs = myTime - 86400 * 7
-        
+
         request.write(env.get_template("reservations.html").render(siteRenderArgs, object=obj, curTs=myTime, prevTs=prevTs, nextTs=nextTs,
                                                             reservations=rd).encode("utf-8"))
         request.finish()
@@ -239,10 +239,10 @@ class ListReservations(Resource):
         if not hasattr(session, "bewator_session"):
             return relogin(request)
 
-        if not "object" in request.args:
+        if not b"object" in request.args:
             return badRequest(request, "no object specified")
 
-        obj = request.args["object"][0]
+        obj = request.args[b"object"][0]
 
         if not obj.isdigit():
             return badRequest(request, "nasty-error!")
@@ -260,8 +260,8 @@ class ListReservations(Resource):
         startTime = int((dt - datetime(1990, 1, 1, 0, 0)).total_seconds())
         nowTime = int((datetime.now() - datetime(1990, 1, 1, 0, 0)).total_seconds())
 
-        if "fromTs" in request.args and request.args["fromTs"][0].isdigit():
-            myTime = int(request.args["fromTs"][0])
+        if b"fromTs" in request.args and request.args[b"fromTs"][0].decode().isdigit():
+            myTime = int(request.args[b"fromTs"][0].decode("ascii"))
         elif hasattr(session, "my_time"):
             myTime = session.my_time
         else:
@@ -278,21 +278,21 @@ class ListReservations(Resource):
 class MakeReservation(Resource):
     def async_finish(self, res, request):
         if (res == 48):
-            request.write("All ok!")
+            request.write(b"All ok!")
         elif (res == 49):
             request.write(relogin(request))
         elif (res == 50):
-            request.write(bewatorRequestError(request, "Someone has reserved this time already. Sorry."))
+            request.write(bewatorRequestError(request, b"Someone has reserved this time already. Sorry."))
         elif (res == 51):
-            request.write(bewatorRequestError(request, "Max number of reservations reached for your group."))
+            request.write(bewatorRequestError(request, b"Max number of reservations reached for your group."))
         elif (res == 52):
-            request.write(bewatorRequestError(request, "Time interval no longer available."))
+            request.write(bewatorRequestError(request, b"Time interval no longer available."))
         elif (res == 53):
-            request.write(bewatorRequestError(request, "Max number of reservations reached for this period."))
+            request.write(bewatorRequestError(request, b"Max number of reservations reached for this period."))
         elif (res == 54):
-            request.write(bewatorRequestError(request, "Booking object is in service state, please try again later."))
+            request.write(bewatorRequestError(request, b"Booking object is in service state, please try again later."))
         else:
-            request.write(bewatorRequestError(request, "Unknown error: %d" % (res, )))
+            request.write(bewatorRequestError(request, b"Unknown error: %d" % (res, )))
         
         request.finish()
     
@@ -301,22 +301,22 @@ class MakeReservation(Resource):
         if not hasattr(session, "bewator_session"):
             return relogin(request)
 
-        if not "start" in request.args or not "end" in request.args:
+        if not b"start" in request.args or not b"end" in request.args:
             return badRequest(request, "parameter error")
 
-        if not "object" in request.args:
+        if not b"object" in request.args:
             return badRequest(request, "no object specified")
 
-        obj = request.args["object"][0]
+        obj = request.args[b"object"][0].decode()
         
-        start = request.args["start"][0]
-        end = request.args["end"][0]
+        start = request.args[b"start"][0].decode()
+        end = request.args[b"end"][0]
         
         if not start.isdigit() or not end.isdigit() or not obj.isdigit():
-            return badRequest(request, "nasty-error!")
+            return badRequest(request, b"nasty-error!")
         
         if not validateCsrfToken(session, request):
-            return badRequest(request, "csrf token error")
+            return badRequest(request, b"csrf token error")
         
         obj = int(obj)
         start = int(start)
@@ -331,11 +331,11 @@ class MakeReservation(Resource):
 class CancelReservation(Resource):
     def async_finish(self, res, request):
         if (res == 48):
-            request.write("All ok!")
+            request.write(b"All ok!")
         else:
             # Else something else (probably tried to cancel someone else's reservation.
             # Not likely to happen, but..
-            request.write(bewatorRequestError(request, "You can only cancel your own reservations."))
+            request.write(bewatorRequestError(request, b"You can only cancel your own reservations."))
         
         request.finish()
 
@@ -344,18 +344,18 @@ class CancelReservation(Resource):
         if not hasattr(session, "bewator_session"):
             return relogin(request)
 
-        if not "start" in request.args or not "object" in request.args:
-            return badRequest(request, "parameter error")
+        if not b"start" in request.args or not b"object" in request.args:
+            return badRequest(request, b"parameter error")
 
-        obj = request.args["object"][0]
+        obj = request.args[b"object"][0].decode()
         
-        start = request.args["start"][0]
+        start = request.args[b"start"][0].decode()
         
         if not start.isdigit() or not obj.isdigit():
-            return badRequest(request, "nasty-error!")
+            return badRequest(request, b"nasty-error!")
 
         if not validateCsrfToken(session, request):
-            return badRequest(request, "csrf token error")
+            return badRequest(request, b"csrf token error")
 
         obj = int(obj)
         start = int(start)
@@ -368,16 +368,17 @@ class CancelReservation(Resource):
 
 if __name__ == "__main__":
     root = Index()
-    root.putChild("index", Index())
-    root.putChild("loading.gif", static.File(curdir + "/static/loading.gif"))
-    root.putChild("style.css", static.File(curdir + "/static/style.css"))
-    root.putChild("beware.js", static.File(curdir + "/static/beware.js"))
-    root.putChild("login", Login())
-    root.putChild("logout", Logout())
-    root.putChild("objects", ListObjects())
-    root.putChild("reservations", ListReservations())
-    root.putChild("reserve", MakeReservation())
-    root.putChild("cancel", CancelReservation())
+    root.putChild(b'', Index())
+    root.putChild(b"index", Index())
+    root.putChild(b"loading.gif", static.File(curdir + "/static/loading.gif"))
+    root.putChild(b"style.css", static.File(curdir + "/static/style.css"))
+    root.putChild(b"beware.js", static.File(curdir + "/static/beware.js"))
+    root.putChild(b"login", Login())
+    root.putChild(b"logout", Logout())
+    root.putChild(b"objects", ListObjects())
+    root.putChild(b"reservations", ListReservations())
+    root.putChild(b"reserve", MakeReservation())
+    root.putChild(b"cancel", CancelReservation())
     
     def usage():
         print("usage: ", sys.argv[0], " -H <bewator-applet-url> [-t <title>] [-p <port>] --logfile=file.log", file=sys.stderr, sep="")
@@ -392,7 +393,7 @@ if __name__ == "__main__":
     
     host = None
     port = 31337
-    siteTitle = u"Beware Bewator"
+    siteTitle = "Beware Bewator"
     
     customCss = False
     
@@ -409,13 +410,13 @@ if __name__ == "__main__":
         elif o == "-H":
             host = a
         elif o == "-t":
-            siteTitle = a.decode("utf-8")
+            siteTitle = a
         elif o == "-p":
             port = int(a)
         elif o == "-l":
             doTranslation(a)
         elif o == "-c":
-            root.putChild("custom.css", static.File(curdir + "/static/" + a))
+            root.putChild(b"custom.css", static.File(curdir + "/static/" + a))
             customCss = True
         elif o == "--logfile":
             logfilename = a
@@ -423,7 +424,7 @@ if __name__ == "__main__":
             assert False, "unhandled option"
 
     if not customCss:
-        root.putChild("custom.css", static.File(curdir + "/static/custom.css"))
+        root.putChild(b"custom.css", static.File(curdir + "/static/custom.css"))
 
     if host is None:
         usage()

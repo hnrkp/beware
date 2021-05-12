@@ -1,8 +1,8 @@
-import urllib
-import httplib
+import urllib.request, urllib.parse, urllib.error
+import http.client
 import hashlib
 from datetime import datetime, timedelta
-from StringIO import StringIO
+from io import BytesIO
 
 from reservations import reservation
 
@@ -10,22 +10,23 @@ class BewatorCgi:
     def __init__(self, hostname):
         self.hostname = hostname
         
-        self.conn = httplib.HTTPConnection(hostname, timeout=60)
+        self.conn = http.client.HTTPConnection(hostname, timeout=60)
     
     def __skipDelimiter(self, f):
         d = f.read(1)
-        if d != '\t':
+        if d != b'\t':
             raise Exception("parse error because " + str(ord(d)))
 
     def __readByteParam(self, f):
         s = f.read(2)
+        if s[0] != ord('1') and s[0] != ord('0'):
+            print (s)
+            raise Exception("parse error")
     
-        assert s[0] == '1' or s[0] == '0'
+        if s[0] == ord('1'):
+            return s[1] - ord('0')
     
-        if s[0] == '1':
-            return ord(s[1]) - ord('0')
-    
-        return ord(s[1])
+        return int(s[1])
 
     def __readByteParamArray(self, f, n):
             i = 0
@@ -42,26 +43,25 @@ class BewatorCgi:
         return self.__readByteParam(f) << 8 | self.__readByteParam(f)
     
     def __testBit(self, array, i):
-        return (array[i / 8] & 1 << i % 8) != 0
+        return (array[int(i / 8)] & 1 << i % 8) != 0
     
     def login(self, user, password):
         passhash = hashlib.md5(password).hexdigest()
         
         self.conn.request("GET", "/login.cgi?id=%s&data=%s&type=1" % (user, passhash))
         r = self.conn.getresponse()
-        
         if r.status != 200:
             return -1
         
         s = r.read()
         
-        status = ord(s[1])
+        status = s[1]
         
         # FIXME parse and return something useful
         if status != 48 or len(s) < 4:
             return -1
         
-        sessid = ord(s[3]) - 48
+        sessid = s[3] - 48
         
         return sessid
     
@@ -74,12 +74,13 @@ class BewatorCgi:
 
         buf = r.read()
         
-        f = StringIO(buf)
+        f = BytesIO(buf)
         
         f.read(1)
         status = ord(f.read(1))
 
         if status != 48:
+            print(buf)
             return (status, None)
 
         f.read(1)
@@ -88,7 +89,7 @@ class BewatorCgi:
 
         i = 1
         
-        while f.read(1) == '1':
+        while f.read(1) == b'1':
             l = ord(f.read(1)) - ord('0')
         
             self.__skipDelimiter(f)
@@ -106,7 +107,7 @@ class BewatorCgi:
         r = self.conn.getresponse()
     
         buf = r.read()
-        f = StringIO(buf)
+        f = BytesIO(buf)
         s = f.read()
     
         s = s.split('\t')
@@ -119,13 +120,13 @@ class BewatorCgi:
         """Get an object holding the reservations starting at time fromTime.
            That time is the Bewator 'seconds' since 1990 timestamp.""" 
         
-        self.conn.request("GET", "/combo.cgi?session=%d&object=%d&start=%d&stop=%d" % (session, obj, fromTime/86400, fromTime/86400+6))
+        self.conn.request("GET", "/combo.cgi?session=%d&object=%d&start=%d&stop=%d" % (session, obj, int(fromTime/86400), int(fromTime/86400)+6))
         
         r = self.conn.getresponse()
     
         resstr = r.read()
     
-        f = StringIO(resstr)
+        f = BytesIO(resstr)
         f.read(1)
     
         status = ord(f.read(1))
@@ -136,15 +137,14 @@ class BewatorCgi:
         self.__skipDelimiter(f)
     
         nintervals = self.__readByteParam(f)
-    
         intervals = []
         i = 0
         while i < nintervals:
             self.__skipDelimiter(f)
-            i0 = int(f.read(5))
+            i0 = int(f.read(5).decode("ascii"))
             self.__skipDelimiter(f)
-            i1 = int(f.read(5))
-    
+            i1 = int(f.read(5).decode("ascii"))
+
             intervals.append((i0, i1))
     
             i += 1
@@ -183,7 +183,7 @@ class BewatorCgi:
     
         self.__skipDelimiter(f)
     
-        min_time_rem = int(f.read(5))
+        min_time_rem = int(f.read(5).decode("ascii"))
     
         self.__skipDelimiter(f)
     
@@ -193,13 +193,13 @@ class BewatorCgi:
             raise Exception("Unable to handle flexible_ts option")
     
         tintervals = nintervals * 7
-        k = tintervals / 8
+        k = int(tintervals / 8)
         if tintervals % 8 > 0:
             k += 1
-    
-        if f.read(1) != '0':
-            raise Exception("parse error, required field 0, got something else..")
-    
+        
+        delim = f.read(1)
+        if delim != b'0':
+            raise Exception("parse error, required field 0, got something else..", delim)
         self.__skipDelimiter(f)
         otherBookings = self.__readByteParamArray(f, k)
     
@@ -208,7 +208,7 @@ class BewatorCgi:
     
         bookings = []
     
-        i = 0
+        i = int(0)
         
         dt = (datetime(1990, 1, 1, 0, 0) + timedelta(seconds = fromTime)).replace(hour = 0, minute = 0, second = 0)
         
@@ -221,11 +221,10 @@ class BewatorCgi:
             else:
                 b = 0
 
-            ddt = dt + timedelta(days = i/nintervals)
+            ddt = dt + timedelta(days = int(i/nintervals))
 
             startOfDay = (ddt - datetime(1990, 1, 1, 0, 0)).total_seconds()
-        
-            interval = intervals[i % len(intervals)]
+            interval = intervals[int(i % len(intervals))]
     
             tsFrom = startOfDay + interval[0]
             tsTo = startOfDay + interval[1]
@@ -249,7 +248,7 @@ class BewatorCgi:
     
         resstr = r.read()
     
-        f = StringIO(resstr)
+        f = BytesIO(resstr)
         f.read(1)
     
         status = f.read(1)
@@ -262,7 +261,7 @@ class BewatorCgi:
     
         resstr = r.read()
     
-        f = StringIO(resstr)
+        f = BytesIO(resstr)
         f.read(1)
     
         status = f.read(1)
